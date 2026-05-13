@@ -1,0 +1,3982 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Data Analyse — Engineering</title>
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
+<style>
+  :root {
+    --bg: #ffffff; --bg-soft: #fafafa; --text: #1a1a1a;
+    --muted: #6b7280; --line: #e5e7eb; --line-strong: #d1d5db;
+    --accent: #3b82f6;
+    --accent-soft-1: rgba(59,130,246,0.10);
+    --accent-soft-2: rgba(59,130,246,0.22);
+    --accent-soft-3: rgba(59,130,246,0.42);
+    --danger: #dc2626; --orange: #ea580c;
+    --wall: #8b6f47; --wall-edge: #5e4a30;
+    --plate-fill: #fafafa; --hover: #f9fafb; --card: #ffffff;
+    --team1: #ef4444; --team2: #3b82f6;
+  }
+  [data-theme="dark"] {
+    --bg: #0b0d11; --bg-soft: #11141a; --text: #e7ecf3;
+    --muted: #94a3b8; --line: #1f2632; --line-strong: #2c3645;
+    --accent: #60a5fa;
+    --accent-soft-1: rgba(96,165,250,0.10);
+    --accent-soft-2: rgba(96,165,250,0.22);
+    --accent-soft-3: rgba(96,165,250,0.42);
+    --danger: #f87171; --orange: #fb923c;
+    --wall: #a98a5a; --wall-edge: #6b563a;
+    --plate-fill: #161a22; --hover: #161a22; --card: #11141a;
+    --team1: #f87171; --team2: #60a5fa;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 14px; -webkit-font-smoothing: antialiased;
+    transition: background 0.2s ease, color 0.2s ease;
+    min-height: 100vh;
+  }
+  html { background: var(--bg); }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 24px 24px 48px; }
+  .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; gap: 12px; }
+  .group-bar {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 18px; padding: 10px 14px;
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    flex-wrap: wrap;
+  }
+  .group-bar-label {
+    font-size: 12px; color: var(--muted); font-weight: 500;
+    display: inline-flex; align-items: center;
+  }
+  .group-switcher {
+    display: inline-flex; gap: 4px;
+    background: var(--card);
+    border: 1px solid var(--line-strong);
+    border-radius: 6px; padding: 3px;
+  }
+  .group-switcher button {
+    border: 0; background: transparent;
+    padding: 5px 12px; font-size: 12.5px;
+    color: var(--muted); cursor: pointer;
+    font-family: inherit;
+    border-radius: 4px;
+    display: inline-flex; align-items: center; gap: 7px;
+    transition: background 0.15s, color 0.15s;
+  }
+  .group-switcher button:hover { color: var(--text); background: var(--hover); }
+  .group-switcher button.active {
+    background: var(--text); color: var(--bg);
+    font-weight: 500;
+  }
+  .group-switcher button.active .group-dot { box-shadow: 0 0 0 2px var(--bg); }
+  .group-dot {
+    display: inline-block; width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .group-members {
+    margin-left: auto;
+    display: inline-flex; align-items: center; gap: 8px;
+    flex-wrap: wrap;
+    font-size: 12px;
+  }
+  .group-members-label {
+    color: var(--muted); font-weight: 500;
+  }
+  .group-members-list {
+    display: inline-flex; flex-wrap: wrap; gap: 4px;
+  }
+  .member-chip {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 999px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    font-size: 11.5px;
+    color: var(--text);
+  }
+  .member-chip.organizer-chip {
+    background: rgba(234,88,12,0.08);
+    border-color: rgba(234,88,12,0.35);
+    color: var(--orange);
+    font-weight: 500;
+  }
+  @media (max-width: 880px) {
+    .group-members { margin-left: 0; width: 100%; margin-top: 6px; }
+  }
+  .title-block { flex: 1; min-width: 0; }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+  .title-sep {
+    color: var(--muted);
+    font-weight: 400;
+    margin: 0 4px;
+  }
+  .title-accent {
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .subtitle {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin: 3px 0 0;
+    font-weight: 400;
+  }
+  .theme-toggle {
+    background: transparent; border: 1px solid var(--line-strong);
+    border-radius: 999px; padding: 5px 12px; font-size: 12px; cursor: pointer;
+    color: var(--text); font-family: inherit;
+    display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;
+  }
+  .theme-toggle:hover { background: var(--hover); }
+  .theme-toggle svg { width: 14px; height: 14px; }
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 22px; flex-wrap: wrap; }
+  .tab {
+    background: transparent; border: 0; cursor: pointer;
+    padding: 9px 16px; font-size: 13px; color: var(--muted);
+    border-bottom: 2px solid transparent; font-family: inherit; margin-bottom: -1px;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--text); border-bottom-color: var(--text); font-weight: 500; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .controls { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+  .btn {
+    background: var(--card); border: 1px solid var(--line-strong);
+    border-radius: 6px; padding: 5px 12px; font-size: 12.5px;
+    cursor: pointer; color: var(--text); font-family: inherit;
+  }
+  .save-warning {
+    margin-top: 18px;
+    padding: 12px 16px;
+    background: rgba(245,158,11,0.08);
+    border: 1px solid rgba(245,158,11,0.35);
+    border-left: 3px solid #f59e0b;
+    border-radius: 6px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    color: var(--text);
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+  .save-warning svg { color: #f59e0b; }
+  .save-warning strong {
+    display: block;
+    color: #f59e0b;
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+  .save-warning p {
+    margin: 0;
+    color: var(--muted);
+  }
+  .save-warning p b {
+    color: var(--text);
+    font-weight: 500;
+  }
+  .autosave-indicator {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11.5px; color: #10b981;
+    padding: 4px 10px;
+    border: 1px solid rgba(16,185,129,0.3);
+    background: rgba(16,185,129,0.06);
+    border-radius: 999px;
+    opacity: 0; transition: opacity 0.25s ease;
+    pointer-events: auto;
+    cursor: help;
+  }
+  .autosave-indicator.visible { opacity: 1; }
+  .autosave-indicator svg { flex-shrink: 0; }
+  .editor-lock-notice {
+    display: flex; align-items: center; gap: 8px;
+    margin: 8px 0 14px;
+    padding: 8px 12px;
+    background: rgba(59,130,246,0.06);
+    border: 1px solid rgba(59,130,246,0.25);
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+  .editor-lock-notice svg { color: var(--accent); }
+  .editor-lock-notice b { color: var(--text); font-weight: 500; }
+  @keyframes editorFlashAnim {
+    0%   { box-shadow: 0 0 0 0 rgba(245,158,11,0); }
+    20%  { box-shadow: 0 0 0 4px rgba(245,158,11,0.45); }
+    100% { box-shadow: 0 0 0 0 rgba(245,158,11,0); }
+  }
+  .editor-flash {
+    animation: editorFlashAnim 0.6s ease-out;
+    border-color: #f59e0b !important;
+  }
+  .btn:hover { background: var(--hover); }
+  .btn.active { border-color: var(--text); }
+  .btn-with-icon {
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-with-icon svg { flex-shrink: 0; }
+  .run-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; }
+  .run-btn {
+    background: transparent; border: 1px solid var(--line);
+    border-radius: 999px; padding: 4px 12px; font-size: 12px;
+    cursor: pointer; color: var(--muted); font-family: inherit;
+  }
+  .run-btn:hover { color: var(--text); }
+  .run-btn.active {
+    background: var(--accent-soft-1); border-color: var(--accent);
+    color: var(--accent); font-weight: 500;
+  }
+  .run-btn small { color: inherit; opacity: 0.75; margin-left: 3px; }
+  .stat-grid {
+    display: grid; grid-template-columns: repeat(5,1fr); gap: 0;
+    margin-bottom: 20px; border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line); padding: 14px 0;
+  }
+  @media (max-width: 720px) { .stat-grid { grid-template-columns: repeat(2,1fr); gap: 12px 0; } }
+  .stat { padding: 0 20px; border-right: 1px solid var(--line); }
+  .stat:last-child { border-right: 0; }
+  .stat-label { font-size: 11.5px; color: var(--muted); margin: 0 0 4px; }
+  .stat-label[data-tip] {
+    cursor: help;
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dashed var(--muted);
+  }
+  .stat-label[data-tip]:hover { color: var(--text); border-bottom-color: var(--text); }
+  .stat-label[data-tip]::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 0;
+    background: var(--text);
+    color: var(--bg);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 400;
+    white-space: normal;
+    width: max-content;
+    max-width: 260px;
+    text-align: left;
+    line-height: 1.45;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+    z-index: 30;
+  }
+  .stat-label[data-tip]::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 3px);
+    left: 12px;
+    border: 5px solid transparent;
+    border-top-color: var(--text);
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    pointer-events: none;
+    z-index: 30;
+  }
+  .stat-label[data-tip]:hover::after,
+  .stat-label[data-tip]:hover::before {
+    opacity: 1;
+  }
+  .target-prob-card {
+    margin-top: 24px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 18px 20px;
+  }
+  .target-prob-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .target-prob-header h3 {
+    margin: 0 0 4px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .target-prob-header .desc {
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--muted);
+    max-width: 580px;
+  }
+  .target-prob-input {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    flex-shrink: 0;
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 6px 14px;
+  }
+  .target-prob-input label { color: var(--muted); }
+  .target-prob-input input {
+    width: 56px;
+    padding: 3px 8px;
+    text-align: right;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--card);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    -moz-appearance: textfield;
+  }
+  .target-prob-input input::-webkit-outer-spin-button,
+  .target-prob-input input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .target-prob-input input:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: -1px;
+    border-color: var(--accent);
+  }
+  .target-prob-result {
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 16px 18px;
+    font-size: 13px;
+    line-height: 1.65;
+  }
+  .target-prob-result .tp-headline {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 0 0 10px;
+  }
+  .target-prob-result .tp-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--line);
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .target-prob-result .tp-row:last-of-type { border-bottom: 0; }
+  .target-prob-result .tp-label {
+    color: var(--text);
+  }
+  .target-prob-result .tp-label small {
+    color: var(--muted);
+    font-size: 11.5px;
+    display: block;
+    margin-top: 2px;
+  }
+  .target-prob-result .tp-val {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--accent);
+    text-align: right;
+    white-space: nowrap;
+  }
+  .target-prob-result .tp-val small {
+    color: var(--muted);
+    font-weight: 400;
+    font-size: 11.5px;
+  }
+  .target-prob-result .tp-summary {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line-strong);
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+  .target-prob-result .tp-summary b { color: var(--text); font-weight: 500; }
+  .target-prob-result .tp-warn {
+    color: var(--danger);
+    font-weight: 500;
+  }
+  .stat-val { font-size: 18px; font-weight: 500; margin: 0; }
+  .stat-val.hl { color: var(--accent); }
+  .legend { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 8px; font-size: 11.5px; color: var(--muted); }
+  .legend span.sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+  .chart-wrap { position: relative; width: 100%; height: 320px; margin-bottom: 30px; }
+  .gate-title {
+    font-size: 14px; font-weight: 600; margin: 0 0 14px;
+    border-top: 1px solid var(--line); padding-top: 18px;
+  }
+  .gate-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .gate-grid { grid-template-columns: 1fr; } }
+  .slider-row {
+    display: grid; grid-template-columns: 170px 1fr auto auto;
+    align-items: center; gap: 12px; padding: 8px 0; font-size: 13px;
+  }
+  .slider-row label { color: var(--muted); }
+  input[type="range"] {
+    -webkit-appearance: none; appearance: none;
+    height: 3px; background: var(--line-strong);
+    border-radius: 2px; outline: none; min-width: 0;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--accent); cursor: pointer;
+    border: 2px solid var(--card);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--accent); cursor: pointer; border: 2px solid var(--card);
+  }
+  .num-input {
+    width: 70px; padding: 4px 6px;
+    border: 1px solid var(--line-strong); border-radius: 5px;
+    background: var(--card); color: var(--text);
+    font-family: inherit; font-size: 12.5px;
+    font-variant-numeric: tabular-nums; text-align: right;
+    -moz-appearance: textfield;
+  }
+  .num-input::-webkit-outer-spin-button, .num-input::-webkit-inner-spin-button {
+    -webkit-appearance: none; margin: 0;
+  }
+  .num-input:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: var(--accent); }
+  .notes-input {
+    width: 100%;
+    background: var(--card); color: var(--text);
+    border: 1px solid var(--line-strong); border-radius: 6px;
+    padding: 8px 10px;
+    font-family: inherit; font-size: 12.5px;
+    line-height: 1.5;
+    resize: vertical; min-height: 60px;
+  }
+  .notes-input::placeholder { color: var(--muted); opacity: 0.7; }
+  .notes-input:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: var(--accent); }
+  .run-item .run-notes {
+    flex-basis: 100%;
+    margin-top: 6px;
+    padding: 6px 10px;
+    background: var(--bg-soft);
+    border-left: 2px solid var(--line-strong);
+    border-radius: 4px;
+    font-size: 11.5px;
+    color: var(--muted);
+    line-height: 1.45;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .run-item.active .run-notes { border-left-color: var(--accent); }
+  .run-item .run-row-main {
+    display: flex; align-items: center; gap: 10px;
+    flex: 1; min-width: 0;
+  }
+  .run-item { flex-wrap: wrap; }
+  .reset-btn {
+    background: transparent; border: 1px solid var(--line);
+    border-radius: 5px; padding: 3px 6px; font-size: 11px;
+    cursor: pointer; color: var(--muted); font-family: inherit;
+    display: inline-flex; align-items: center; gap: 3px;
+  }
+  .reset-btn:hover { color: var(--text); background: var(--hover); }
+  .reset-btn svg { width: 11px; height: 11px; }
+  .geom-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 6px; }
+  .geom-table td { padding: 7px 0; border-bottom: 1px solid var(--line); }
+  .geom-table td.label { color: var(--muted); }
+  .geom-table td.val { text-align: right; font-variant-numeric: tabular-nums; font-weight: 500; }
+  .geom-table tr.highlight td { border-bottom: 0; padding-top: 12px; }
+  .geom-table tr.highlight td.label { color: var(--text); font-weight: 500; }
+  .geom-table tr.highlight td.val { color: var(--danger); font-weight: 600; font-size: 16px; }
+  .meas-card {
+    background: var(--bg-soft); border: 1px solid var(--line);
+    border-radius: 8px; padding: 12px 14px; margin-bottom: 18px;
+  }
+  .meas-card h3 {
+    font-size: 12.5px; font-weight: 500; color: var(--muted);
+    margin: 0 0 8px; text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .meas-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; font-size: 13px; }
+  .meas-row label { color: var(--muted); margin-right: 6px; }
+  .meas-row select {
+    background: var(--card); color: var(--text);
+    border: 1px solid var(--line-strong); border-radius: 5px;
+    padding: 4px 8px; font-family: inherit; font-size: 12.5px; cursor: pointer;
+  }
+  .meas-row .reset-all-btn {
+    margin-left: auto;
+    background: transparent; border: 1px solid var(--line-strong);
+    border-radius: 5px; padding: 4px 10px; font-size: 12px;
+    cursor: pointer; color: var(--text); font-family: inherit;
+  }
+  .meas-row .reset-all-btn:hover { background: var(--hover); }
+  .landing-row { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 24px; align-items: start; }
+  .landing-row.dual-mode { grid-template-columns: 0.5fr 1.5fr; }
+  @media (max-width: 880px) { .landing-row, .landing-row.dual-mode { grid-template-columns: 1fr; } }
+  .landing-controls { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+  .landing-controls .mode {
+    display: inline-flex; border: 1px solid var(--line-strong);
+    border-radius: 6px; overflow: hidden;
+  }
+  .landing-controls .mode button {
+    background: transparent; border: 0; padding: 5px 12px;
+    font-size: 12.5px; cursor: pointer; color: var(--muted); font-family: inherit;
+  }
+  .landing-controls .mode button.active { background: var(--text); color: var(--bg); }
+  .view-toggle {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 4px 12px; border: 1px solid var(--line-strong);
+    border-radius: 999px; cursor: pointer; font-size: 12.5px;
+  }
+  .view-toggle input { margin: 0; cursor: pointer; }
+  .tube-control {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 4px 12px; border: 1px solid var(--line-strong);
+    border-radius: 999px; font-size: 12.5px;
+  }
+  .tube-control input {
+    width: 60px; padding: 2px 6px;
+    border: 1px solid var(--line); border-radius: 4px;
+    background: var(--card); color: var(--text);
+    font-family: inherit; font-size: 12px;
+    text-align: right;
+    -moz-appearance: textfield;
+  }
+  .tube-control input::-webkit-outer-spin-button,
+  .tube-control input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .tube-control input:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: var(--accent); }
+  .plate-card {
+    border: 1px solid var(--line); border-radius: 8px;
+    padding: 16px; background: var(--card);
+    align-self: start;
+  }
+  .plate-card h3 { font-size: 13px; font-weight: 500; margin: 0 0 4px; }
+  .plate-card .desc { font-size: 12px; color: var(--muted); margin: 0 0 12px; }
+  /* The plate-wrap holds the canvas. Aspect-ratio drives its height. */
+  .plate-wrap {
+    position: relative;
+    display: block;
+    margin: 0 auto;          /* center horizontally inside plate-card */
+    width: 100%;
+    /* height is set in JS by drawPlate based on the plate aspect ratio */
+  }
+  .plate-wrap.single { max-width: 220px; }
+  .plate-wrap.dual { max-width: 220px; }
+  .plate-wrap canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--muted);
+    font-size: 13.5px;
+    line-height: 1.6;
+    border: 1px dashed var(--line-strong);
+    border-radius: 8px;
+    background: var(--bg-soft);
+    min-height: 380px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  .empty-state-icon {
+    display: block;
+    margin: 0 auto 18px;
+    width: 56px; height: 56px;
+    opacity: 0.4;
+  }
+  .empty-state-title {
+    color: var(--text);
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+  .empty-state-hint {
+    margin-top: 18px;
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+  .empty-state-hint b { color: var(--accent); font-weight: 500; }
+  .empty-row td {
+    text-align: center !important;
+    color: var(--muted) !important;
+    font-style: italic;
+    padding: 24px !important;
+  }
+  .axis-note {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 8px;
+  }
+  .heat-legend {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 11px; color: var(--muted);
+    margin-top: 10px; justify-content: center;
+  }
+  .heat-gradient {
+    width: 120px; height: 8px; border-radius: 4px;
+    background: linear-gradient(90deg,
+      rgba(59,130,246,0) 0%, rgba(59,130,246,0.35) 30%,
+      rgba(234,88,12,0.7) 70%, rgba(220,38,38,1) 100%);
+  }
+  .gate-controls-card {
+    border: 1px solid var(--line); border-radius: 8px;
+    padding: 16px; background: var(--card); margin-top: 16px;
+  }
+  .gate-controls-card h3 { font-size: 13px; font-weight: 500; margin: 0 0 12px; }
+  .info-content { max-width: 720px; font-size: 14px; line-height: 1.65; color: var(--text); }
+  .info-content h2 { font-size: 15px; font-weight: 600; margin: 24px 0 8px; }
+  .info-content h2:first-child { margin-top: 0; }
+  .info-content p { margin: 8px 0; color: var(--muted); }
+  .info-content ol, .info-content ul { padding-left: 22px; }
+  .info-content li { margin: 6px 0; color: var(--muted); }
+  .info-content code {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 12.5px; background: var(--hover);
+    padding: 1px 5px; border-radius: 3px;
+  }
+  .info-content .formula {
+    background: var(--bg-soft); border-left: 2px solid var(--accent);
+    padding: 10px 14px; margin: 10px 0;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px;
+  }
+  .total-prob-card {
+    background: linear-gradient(135deg, var(--accent-soft-1), rgba(220,38,38,0.08));
+    border: 1px solid var(--line); border-radius: 8px;
+    padding: 14px 18px; margin-top: 14px;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 10px;
+  }
+  .total-prob-card .lbl { font-size: 12px; color: var(--muted); }
+  .total-prob-card .val {
+    font-size: 22px; font-weight: 600; color: var(--danger);
+    font-variant-numeric: tabular-nums;
+  }
+  .total-prob-card .sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .score-table {
+    width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 8px;
+  }
+  .score-table th, .score-table td {
+    padding: 6px 4px; text-align: center;
+    border-bottom: 1px solid var(--line);
+    font-variant-numeric: tabular-nums;
+  }
+  .score-table th { color: var(--muted); font-weight: 500; font-size: 11px; }
+  .score-table .score { font-weight: 600; color: var(--accent); }
+  .totals-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+    margin-bottom: 10px;
+  }
+  @media (max-width: 600px) { .totals-grid { grid-template-columns: repeat(2, 1fr); } }
+  .totals-cell {
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 10px 12px;
+  }
+  .totals-cell.good { border-left: 3px solid #10b981; }
+  .totals-cell.bad { border-left: 3px solid var(--danger); }
+  .totals-label {
+    font-size: 10.5px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.04em;
+    margin-bottom: 4px;
+  }
+  .totals-val {
+    font-size: 22px; font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .totals-val small {
+    font-size: 13px; font-weight: 400; color: var(--muted);
+  }
+  .totals-sub {
+    font-size: 11px; color: var(--muted); margin-top: 2px;
+    font-variant-numeric: tabular-nums;
+  }
+  .totals-compare {
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 12px; color: var(--muted);
+    line-height: 1.55;
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .totals-compare b { color: var(--text); font-weight: 500; }
+  .dash-tables {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start;
+  }
+  @media (max-width: 720px) { .dash-tables { grid-template-columns: 1fr; } }
+  .settings-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 18px;
+    align-items: start;
+  }
+  @media (max-width: 880px) { .settings-grid { grid-template-columns: 1fr; } }
+  .settings-section {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 8px; padding: 18px 20px;
+  }
+  .settings-section h3 {
+    font-size: 14px; font-weight: 600; margin: 0 0 4px;
+    color: var(--text);
+  }
+  .settings-section .desc {
+    font-size: 12.5px; color: var(--muted); margin: 0;
+    line-height: 1.5;
+  }
+  .full-select {
+    width: 100%;
+    background: var(--card); color: var(--text);
+    border: 1px solid var(--line-strong); border-radius: 5px;
+    padding: 7px 10px; font-family: inherit; font-size: 13px;
+    cursor: pointer;
+  }
+  .full-select:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: var(--accent); }
+  .reset-card { /* overrides settings-section spacing */ }
+  .reset-header {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 16px; flex-wrap: wrap;
+    padding-bottom: 14px; margin-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .reset-action-btn {
+    background: var(--accent) !important;
+    color: var(--card) !important;
+    border-color: var(--accent) !important;
+    font-weight: 500;
+    padding: 7px 16px !important;
+    display: inline-flex; align-items: center;
+    transition: filter 0.15s ease;
+  }
+  .reset-action-btn:hover {
+    filter: brightness(1.1);
+  }
+  .reset-values {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+  }
+  .reset-row {
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 10px 12px;
+    display: flex; flex-direction: column; gap: 2px;
+    position: relative; overflow: hidden;
+  }
+  .reset-row.modified::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 3px; background: var(--accent);
+  }
+  .reset-row .reset-label {
+    font-size: 11px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .reset-row .reset-current {
+    font-size: 15px; font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .reset-row.modified .reset-current { color: var(--accent); }
+  .reset-row .reset-default {
+    font-size: 11px; color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .reset-row .reset-default s { opacity: 0.6; }
+  .compare-mode {
+    display: inline-flex; border: 1px solid var(--line-strong);
+    border-radius: 6px; overflow: hidden;
+    flex-shrink: 0;
+  }
+  .compare-mode button {
+    border: 0; padding: 6px 14px;
+    font-size: 12px; cursor: pointer; color: var(--muted);
+    font-family: inherit; background: var(--card);
+    transition: background 0.15s, color 0.15s;
+  }
+  .compare-mode button:hover { color: var(--text); background: var(--hover); }
+  .compare-mode button.active {
+    background: var(--accent); color: white;
+    font-weight: 500;
+  }
+  .compare-table-wrap {
+    border: 1px solid var(--line); border-radius: 8px;
+    background: var(--card);
+    position: relative;
+  }
+  .compare-table-scroll {
+    border-radius: 8px;
+  }
+  .compare-table {
+    width: 100%; border-collapse: collapse; font-size: 12.5px;
+    table-layout: auto;
+  }
+  .compare-table thead th {
+    padding: 11px 8px 10px;
+    font-weight: 500; color: var(--muted);
+    font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--line-strong);
+    white-space: nowrap;
+    background: var(--bg-soft);
+    text-align: right;
+  }
+  .compare-table thead th:first-child {
+    text-align: left;
+    padding-left: 16px;
+  }
+  .compare-table thead th.group-sep {
+    border-left: 1px solid var(--line);
+  }
+  .compare-table tbody td {
+    padding: 11px 8px;
+    text-align: right;
+    border-bottom: 1px solid var(--line);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    color: var(--text);
+  }
+  .compare-table tbody td.group-sep {
+    border-left: 1px solid var(--line);
+  }
+  .compare-table tbody tr:last-child td { border-bottom: 0; }
+  .compare-table tbody tr:hover td { background: var(--hover); }
+  .compare-table tbody td:first-child {
+    text-align: left; font-weight: 500;
+    padding-left: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .compare-table tbody td .run-dot {
+    display: inline-block; width: 7px; height: 7px;
+    border-radius: 50%; background: var(--accent);
+    flex-shrink: 0;
+  }
+  .compare-table tbody td .run-dot.hidden { visibility: hidden; }
+  .compare-table .col-muted {
+    color: var(--muted); font-size: 12px;
+  }
+  .compare-table .col-score {
+    font-weight: 600; font-size: 14px;
+  }
+  .compare-table .best {
+    color: #10b981; font-weight: 700;
+  }
+  .compare-table .best::before {
+    content: '★\00a0';
+    font-size: 10px;
+    opacity: 0.85;
+    vertical-align: 1px;
+  }
+  .compare-table thead th[data-tip] {
+    cursor: help;
+    position: relative;
+  }
+  .compare-table thead th[data-tip]:hover {
+    color: var(--text);
+  }
+  .compare-table thead th[data-tip]::after {
+    content: attr(data-tip);
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text);
+    color: var(--bg);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    white-space: normal;
+    width: max-content;
+    max-width: 260px;
+    text-align: left;
+    line-height: 1.45;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+    z-index: 50;
+  }
+  .compare-table thead th[data-tip]::before {
+    content: '';
+    position: absolute;
+    top: calc(100% + 3px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-bottom-color: var(--text);
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    pointer-events: none;
+    z-index: 50;
+  }
+  .compare-table thead th[data-tip]:hover::after,
+  .compare-table thead th[data-tip]:hover::before {
+    opacity: 1;
+  }
+  .runs-top {
+    display: block;
+  }
+  .runs-top.editing {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start;
+  }
+  @media (max-width: 880px) { .runs-top.editing { grid-template-columns: 1fr; } }
+  .runs-top > .settings-section { margin-bottom: 18px; }
+  .runs-top > .settings-section:last-child { margin-bottom: 0; }
+  .runs-top.editing > .settings-section { margin-bottom: 0; }
+  #runsManageBox { max-width: 720px; }
+  .runs-top.editing #runsManageBox { max-width: none; }
+  /* Compare section */
+  .compare-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 16px; flex-wrap: wrap;
+    padding-bottom: 14px; margin-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .compare-legend {
+    margin-top: 12px;
+    display: flex; flex-wrap: wrap; gap: 16px;
+    font-size: 11.5px; color: var(--muted);
+    align-items: center;
+  }
+  .compare-legend b { color: var(--text); font-weight: 500; }
+  .compare-legend .legend-dot {
+    display: inline-block; width: 7px; height: 7px;
+    background: var(--accent); border-radius: 50%;
+    margin-right: 4px; vertical-align: 1px;
+  }
+  .compare-legend .legend-hint {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--muted); font-size: 12px;
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 5px 12px;
+  }
+  .compare-chart-block {
+    margin-top: 18px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 16px 18px;
+  }
+  .compare-chart-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 16px; flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .compare-chart-header h4 {
+    margin: 0; font-size: 13px; font-weight: 600;
+  }
+  .compare-axis-toggle {
+    display: inline-flex; border: 1px solid var(--line-strong);
+    border-radius: 6px; overflow: hidden; flex-shrink: 0;
+  }
+  .compare-axis-toggle button {
+    border: 0; padding: 5px 12px;
+    font-size: 12px; cursor: pointer; color: var(--muted);
+    font-family: inherit; background: var(--card);
+  }
+  .compare-axis-toggle button:hover { color: var(--text); background: var(--hover); }
+  .compare-axis-toggle button.active {
+    background: var(--text); color: var(--bg);
+    font-weight: 500;
+  }
+  .compare-chart-wrap {
+    position: relative;
+    width: 100%; height: 280px;
+  }
+  .compare-chart-wrap canvas {
+    width: 100%; height: 100%; display: block;
+  }
+  .compare-chart-legend {
+    display: flex; flex-wrap: wrap; gap: 10px 18px;
+    margin-top: 12px;
+    font-size: 12px;
+  }
+  .compare-chart-legend .chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    color: var(--text);
+  }
+  .compare-chart-legend .chip-swatch {
+    display: inline-block; width: 14px; height: 3px;
+    border-radius: 2px;
+  }
+  .compare-chart-legend .chip-stats {
+    color: var(--muted); font-size: 11px;
+    font-variant-numeric: tabular-nums;
+  }
+  .run-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    margin-bottom: 8px;
+    background: var(--card);
+    cursor: pointer;
+  }
+  .run-item:hover { background: var(--hover); }
+  .run-item.active {
+    border-color: var(--accent);
+    background: var(--accent-soft-1);
+  }
+  .run-item.active:hover { background: var(--accent-soft-2); }
+  .run-check {
+    width: 16px; height: 16px;
+    accent-color: var(--accent);
+    cursor: pointer;
+    margin: 0;
+  }
+  .runs-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 10px; padding: 0 2px;
+    font-size: 12.5px; color: var(--muted);
+    flex-wrap: wrap; gap: 8px;
+  }
+  .runs-header b { color: var(--text); font-weight: 600; }
+  .runs-bulk { display: flex; gap: 6px; }
+  .btn-xs { padding: 3px 9px !important; font-size: 11.5px !important; }
+  .run-item .run-name {
+    flex: 1; font-weight: 500;
+  }
+  .run-item .run-name small {
+    color: var(--muted); font-weight: 400; margin-left: 6px; font-size: 11.5px;
+  }
+  .run-item .run-actions {
+    display: flex; gap: 4px;
+  }
+  button {
+    /* Ensure browser default light backgrounds don't leak through */
+    background: var(--card);
+    color: var(--text);
+  }
+  .run-item .run-actions button {
+    background: var(--bg-soft) !important;
+    border: 1px solid var(--line-strong);
+    border-radius: 4px; padding: 3px 8px;
+    font-size: 11px; cursor: pointer; color: var(--muted);
+    font-family: inherit;
+  }
+  .run-item .run-actions button:hover { color: var(--text); background: var(--hover) !important; }
+  .run-item .run-actions button.danger:hover { color: var(--danger); border-color: var(--danger); }
+  .run-item .active-badge {
+    background: var(--accent); color: var(--card);
+    font-size: 10px; padding: 2px 8px; border-radius: 999px;
+    text-transform: uppercase; letter-spacing: 0.05em; font-weight: 500;
+  }
+  .data-table-wrap {
+    max-height: 360px; overflow-y: auto;
+    border: 1px solid var(--line-strong); border-radius: 6px;
+    background: var(--card);
+  }
+  .data-table {
+    width: 100%; border-collapse: collapse;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 12px;
+  }
+  .data-table thead {
+    position: sticky; top: 0; background: var(--bg-soft);
+    z-index: 1;
+  }
+  .data-table th {
+    padding: 6px 8px; text-align: left;
+    font-weight: 500; color: var(--muted);
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--line);
+  }
+  .data-table th:first-child { width: 36px; text-align: center; }
+  .data-table th:last-child { width: 32px; }
+  .data-table td {
+    padding: 0; border-bottom: 1px solid var(--line);
+  }
+  .data-table td:first-child {
+    text-align: center; color: var(--muted);
+    font-size: 11px; padding: 0 4px;
+  }
+  .data-table input.cell {
+    width: 100%; box-sizing: border-box;
+    border: 0; background: transparent;
+    padding: 5px 8px; font-family: inherit; font-size: 12px;
+    color: var(--text); outline: none;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .data-table input.cell:focus {
+    background: var(--accent-soft-1);
+    box-shadow: inset 0 0 0 1px var(--accent);
+  }
+  .data-table input.cell.invalid {
+    background: rgba(220,38,38,0.08);
+    color: var(--danger);
+  }
+  .data-table .row-del {
+    background: transparent; border: 0;
+    color: var(--muted); cursor: pointer;
+    padding: 4px 8px; font-size: 14px;
+    line-height: 1; opacity: 0.4;
+  }
+  .data-table tr:hover .row-del { opacity: 1; }
+  .data-table .row-del:hover { color: var(--danger); }
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--text); color: var(--bg);
+    padding: 10px 18px; border-radius: 999px;
+    font-size: 13px; box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 100;
+  }
+  .toast.show { opacity: 1; }
+  .dim-diagram {
+    margin: 14px 0 4px;
+    padding: 12px;
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+  }
+  .dim-diagram svg { width: 100%; height: auto; display: block; }
+  .dim-stroke { stroke: var(--text); }
+  .dim-text { fill: var(--muted); font-size: 10px; font-family: -apple-system, system-ui; }
+  .dim-text-val { fill: var(--text); font-size: 11px; font-weight: 500; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  .dim-label { fill: var(--muted); font-size: 11px; font-family: -apple-system, system-ui; font-style: italic; }
+  .dim-margin-label { fill: #10b981; font-size: 10.5px; font-weight: 500; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  .dim-margin { fill: rgba(16,185,129,0.20); stroke: rgba(16,185,129,0.6); }
+  .dim-disk { fill: rgba(220,38,38,0.15); stroke: var(--danger); }
+  .dim-wall { fill: var(--wall); stroke: var(--wall-edge); }
+</style>
+</head>
+<body data-theme="light">
+<div class="toast" id="toast"></div>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="title-block">
+      <h1><span class="title-accent">Data Analyse</span> <span class="title-sep">—</span> Engineering</h1>
+      <p class="subtitle">Onderzoek van welke parameters het beste werken.</p>
+    </div>
+    <div style="display:flex;gap:8px;flex-shrink:0;">
+      <button class="theme-toggle" id="saveBtn" title="Download runs en instellingen als JSON" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        <span>Save</span>
+      </button>
+      <button class="theme-toggle" id="themeBtn" title="Wissel licht/donker">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+        </svg>
+        <span id="themeLabel">Donker</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="group-bar">
+    <div class="group-bar-label">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:6px;">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+      Groep:
+    </div>
+    <div class="group-switcher" id="groupSwitcher">
+      <button class="active" data-group="A"><span class="group-dot" style="background:#3b82f6;"></span>Groep 2 (Sjoelmonster)</button>
+      <button data-group="B"><span class="group-dot" style="background:#10b981;"></span>Groep 1 (Pea Shooter)</button>
+    </div>
+    <div class="group-members" id="groupMembers">
+      <span class="group-members-label">Leden:</span>
+      <span class="group-members-list" id="groupMembersList"></span>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="dashboard">Dashboard</button>
+    <button class="tab" data-tab="landing">Landingen</button>
+    <button class="tab" data-tab="runs">Runs</button>
+    <button class="tab" data-tab="settings">Instellingen</button>
+    <button class="tab" data-tab="info">Info</button>
+  </div>
+
+  <div class="panel active" id="panel-dashboard">
+    <div class="empty-state" id="dashboardEmpty" style="display:none;">
+      <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-5"/>
+      </svg>
+      <div class="empty-state-title">Geen meetdata voor deze groep</div>
+      <div>Voeg een meetreeks toe om de gausverdeling, poortkans en statistieken te zien.</div>
+      <div class="empty-state-hint">Ga naar de <b>Runs</b>-tab en klik op <b>+ Nieuwe run toevoegen</b>, of importeer een JSON-bestand.</div>
+    </div>
+    <div id="dashboardContent">
+    <div class="controls" id="axisCtl">
+      <button class="btn active" data-axis="x">X-richting</button>
+      <button class="btn" data-axis="y">Y-richting</button>
+    </div>
+    <div class="stat-grid" id="stats"></div>
+    <div class="legend">
+      <span><span class="sw" style="background:var(--accent-soft-3)"></span>±1σ — 68%</span>
+      <span><span class="sw" style="background:var(--accent-soft-2)"></span>±2σ — 95%</span>
+      <span><span class="sw" style="background:var(--accent-soft-1)"></span>±3σ — 99.7%</span>
+      <span><span class="sw" style="background:var(--accent)"></span>Verdeling</span>
+      <span class="legend-gate-entry"><span class="sw" style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.7);"></span>Poortje (80 mm)</span>
+      <span class="legend-gate-entry"><span class="sw" style="background:rgba(16,185,129,0.22);border:1px dashed rgba(16,185,129,0.5);"></span>Score-zone schijfmidden</span>
+    </div>
+    <div class="chart-wrap"><canvas id="gc"></canvas></div>
+    <h2 class="gate-title">Poortkans per poortje</h2>
+    <p style="color:var(--muted);font-size:12.5px;margin:-8px 0 14px;">Parameters kun je aanpassen in de <b>Instellingen</b>-tab.</p>
+    <div class="dash-tables">
+      <table class="geom-table">
+        <tr><td class="label">Totale rij-breedte</td><td class="val"><span id="tTotalW">—</span> mm</td></tr>
+        <tr><td class="label">Effectieve marge / poort</td><td class="val">±<span id="tMargin">14</span> mm</td></tr>
+        <tr><td class="label">Centrum poortenrij</td><td class="val"><span id="tCenter">—</span> mm</td></tr>
+        <tr><td class="label">Gemiddelde landing (μ)</td><td class="val"><span id="tMu">—</span> mm</td></tr>
+        <tr><td class="label">Std. afwijking (σ)</td><td class="val"><span id="tSigma">—</span> mm</td></tr>
+        <tr class="highlight"><td class="label">Kans door één van de poorten</td><td class="val"><span id="tProb">—</span>%</td></tr>
+      </table>
+      <div>
+        <h3 style="margin:0 0 8px;font-size:13px;font-weight:500;color:var(--muted);">Kans per individuele poort</h3>
+        <table class="score-table" id="perGateTable"></table>
+      </div>
+    </div>
+
+    <div class="target-prob-card">
+      <div class="target-prob-header">
+        <div>
+          <h3>Wat als je een specifieke slaagkans wilt?</h3>
+          <p class="desc">Vul een gewenste kans in en zie welke standaardafwijking (σ) je nodig hebt om dat te halen — bij optimale richten (μ in het midden van de poortenrij).</p>
+        </div>
+        <div class="target-prob-input">
+          <label for="targetProb">Doel-slaagkans:</label>
+          <input type="number" id="targetProb" min="1" max="99" step="1" value="60" />
+          <span style="color:var(--muted);">%</span>
+        </div>
+      </div>
+      <div class="target-prob-result" id="targetProbResult"></div>
+    </div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-landing">
+    <div class="empty-state" id="landingEmpty" style="display:none;">
+      <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="1"/><circle cx="15" cy="14" r="1"/><circle cx="12" cy="17" r="1"/>
+      </svg>
+      <div class="empty-state-title">Geen meetdata voor deze groep</div>
+      <div>Voeg een meetreeks toe om de landing-posities en buis-statistieken te zien.</div>
+      <div class="empty-state-hint">Ga naar de <b>Runs</b>-tab en klik op <b>+ Nieuwe run toevoegen</b>, of importeer een JSON-bestand.</div>
+    </div>
+    <div id="landingContent">
+    <div class="landing-controls">
+      <div class="mode" id="modeCtl">
+        <button class="active" data-mode="scatter">Scatter</button>
+        <button data-mode="heatmap">Heatmap</button>
+        <button data-mode="both">Beide</button>
+      </div>
+      <label class="view-toggle">
+        <input type="checkbox" id="dualView" />
+        <span>Tegenstander tonen (team vs team)</span>
+      </label>
+      <label class="tube-control">
+        <span>Buis tussen platen:</span>
+        <input type="number" id="tubeLength" min="0" max="500" step="10" value="260" />
+        <span style="color:var(--muted);">mm</span>
+      </label>
+    </div>
+
+    <div class="landing-row">
+      <div class="plate-card">
+        <h3 id="plateTitle">Speelvlak — bovenaanzicht</h3>
+        <p class="desc" id="plateDesc">Sjoelbak 600 × 1840 mm. Sjoelsysteem bovenaan (werpkant), poortjes onderaan op het einde.</p>
+        <div class="plate-wrap single" id="plateWrap"><canvas id="plateCanvas"></canvas></div>
+        <div class="axis-note">X &rarr; van links naar rechts &nbsp;·&nbsp; Y &rarr; afstand vóór de poortjes</div>
+        <div class="heat-legend" id="heatLegendBox" style="display:none;">
+          <span>weinig</span><span class="heat-gradient"></span><span>veel</span>
+        </div>
+      </div>
+
+      <div>
+        <div class="plate-card">
+          <h3>Statistiek per zone</h3>
+          <p class="desc">Verdeling van schijven t.o.v. de poortjeslijn.</p>
+          <table class="geom-table" id="zoneTable"></table>
+        </div>
+
+        <div class="gate-controls-card">
+          <h3>Poortjes-resultaat</h3>
+          <p class="desc" style="margin:0 0 12px;">Parameters kun je aanpassen in de <b>Instellingen</b>-tab.</p>
+          <div class="total-prob-card">
+            <div>
+              <div class="lbl">Theoretische kans op een poortdoorgang (op X)</div>
+              <div class="sub">Bij optimaal richten op midden van poortenrij</div>
+            </div>
+            <div class="val"><span id="landingProb">—</span>%</div>
+          </div>
+          <h3 style="margin:18px 0 8px;font-size:13px;">Resultaat op basis van de meetdata (<span id="activeRunLabel">—</span>)</h3>
+          <div id="totalsBox"></div>
+          <h3 style="margin:18px 0 8px;font-size:13px;">Score per poort</h3>
+          <table class="score-table" id="scoreTable"></table>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-runs">
+    <div class="runs-top">
+      <div class="settings-section" id="runsManageBox">
+        <h3>Runs beheren</h3>
+        <p class="desc">Voeg een nieuwe meetreeks toe, kies welke actief is op het dashboard, of verwijder een run.</p>
+        <div id="runsList" style="margin-top:14px;"></div>
+
+        <div class="save-warning">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px;">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          <div>
+            <strong>Vergeet niet je gegevens te downloaden!</strong>
+            <p>Data wordt opgeslagen in je browser (localStorage), maar verdwijnt als je geschiedenis wist, een andere browser gebruikt of een ander apparaat opent. Klik <b>regelmatig op "Download als JSON"</b> om een backup-bestand te maken dat je later kunt importeren. Je kan ook eerst alles invullen in een Excel-bestand en daarna importeren.</p>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn" id="newRunBtn">+ Nieuwe run toevoegen</button>
+          <button class="btn btn-with-icon" id="importBtn">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            Importeer JSON
+          </button>
+          <button class="btn btn-with-icon" id="saveBtnInline">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Download als JSON
+          </button>
+          <input type="file" id="importFile" accept=".json" style="display:none;" />
+        </div>
+      </div>
+
+      <div class="settings-section" id="runEditorBox" style="display:none;">
+        <h3 id="runEditorTitle">Run bewerken</h3>
+        <div class="editor-lock-notice">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          <span>Tabs en groep-wissel zijn vergrendeld tijdens bewerking. Gebruik <b>Bewaren</b>, <b>Annuleren</b> of download een <b>backup</b> om verder te gaan.</span>
+        </div>
+        <div class="slider-row" style="grid-template-columns: 160px 1fr;">
+          <label for="runNameInput">Naam</label>
+          <input type="text" id="runNameInput" class="num-input" style="width:auto;text-align:left;" />
+        </div>
+        <div class="slider-row" style="grid-template-columns: 160px 1fr auto;">
+          <label for="runRowCount">Aantal metingen</label>
+          <input type="number" id="runRowCount" class="num-input" min="1" max="500" step="1" value="15" />
+          <button class="btn" id="applyRowCount" style="font-size:12px;">Toepassen</button>
+        </div>
+        <div class="slider-row" style="grid-template-columns: 160px 1fr; align-items:flex-start; padding-top:10px;">
+          <label for="runNotesInput" style="padding-top:6px;">Notities</label>
+          <textarea id="runNotesInput" class="notes-input" rows="3" placeholder="Welke parameters zijn gebruikt voor deze run? Bv. hoek, kracht, schijftype, opmerkingen..."></textarea>
+        </div>
+        <div style="margin-top:10px;">
+          <p class="desc" style="margin-bottom:6px;">Vul de X- en Y-waarden in (in mm). Je kunt ook direct een blok uit Excel plakken in een cel — de waarden worden automatisch over meerdere rijen verdeeld.</p>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr><th>#</th><th>X (mm)</th><th>Y (mm)</th><th></th></tr>
+              </thead>
+              <tbody id="runDataTable"></tbody>
+            </table>
+          </div>
+          <p class="desc" id="runDataStatus" style="margin-top:6px;">—</p>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <button class="btn" id="saveRunBtn" style="border-color:var(--accent);color:var(--accent);">Bewaren</button>
+          <button class="btn" id="cancelRunBtn">Annuleren</button>
+          <button class="btn btn-with-icon" id="backupDraftBtn" title="Download een JSON-backup van je huidige invoer — ook onvolledige rijen worden meegenomen. Importeer later met 'Importeer JSON' om verder te werken.">
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Backup downloaden
+          </button>
+          <span class="autosave-indicator" id="autosaveIndicator" title="Wijzigingen worden automatisch tijdelijk opgeslagen — bij refresh kun je verder waar je was.">
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span class="autosave-text">Auto-opgeslagen</span>
+          </span>
+          <button class="btn" id="clearRunBtn" style="margin-left:auto;">Alles wissen</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section" id="runsCompareBox" style="margin-top:18px;">
+      <div class="compare-header">
+        <div>
+          <h3 style="margin:0;">Runs vergelijken</h3>
+          <p class="desc" style="margin:4px 0 0;">De beste waarde per kolom staat in het <b style="color:#10b981;">groen</b> met een ster.</p>
+        </div>
+        <div class="compare-mode" id="compareMode">
+          <button class="active" data-cmp="all">Alle runs</button>
+          <button data-cmp="selected">Enkel geselecteerde</button>
+        </div>
+      </div>
+      <div class="compare-table-wrap">
+        <div class="compare-table-scroll">
+          <table class="compare-table" id="compareTable"></table>
+        </div>
+      </div>
+      <div class="compare-legend">
+        <span class="legend-hint">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+          </svg>
+          Beweeg over de kolomtitels voor uitleg.
+        </span>
+      </div>
+
+      <div class="compare-chart-block">
+        <div class="compare-chart-header">
+          <div>
+            <h4>X-verdeling per run</h4>
+            <p class="desc" style="margin:2px 0 0;">Alle gausscurves over elkaar zodat je kunt zien welke run de smalste (= meest consistente) verdeling heeft.</p>
+          </div>
+          <div class="compare-axis-toggle" id="gaussAxisToggle">
+            <button class="active" data-ax="x">X-as</button>
+            <button data-ax="y">Y-as</button>
+          </div>
+        </div>
+        <div class="compare-chart-wrap">
+          <canvas id="compareGaussCanvas"></canvas>
+        </div>
+        <div class="compare-chart-legend" id="compareGaussLegend"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-settings">
+    <div class="settings-grid">
+      <div class="settings-section">
+        <h3>Meetpunt van de schijf</h3>
+        <p class="desc">Vanaf welke hoek van de schijf zijn de coördinaten gemeten?</p>
+        <div style="margin-top:10px;">
+          <select id="measRef" class="full-select">
+            <option value="tl" selected>Linkerbovenhoek (vanuit werper-perspectief)</option>
+            <option value="tr">Rechterbovenhoek</option>
+            <option value="bl">Linkeronderhoek</option>
+            <option value="br">Rechteronderhoek</option>
+            <option value="center">Midden van schijf</option>
+          </select>
+        </div>
+        <p class="desc" style="margin-top:8px;">Vertaalt metingen naar middencoördinaten op basis van schijfdiameter (Ø<span id="measDiamLbl">52</span> mm).</p>
+      </div>
+
+      <div class="settings-section" style="grid-column: 1 / -1;">
+        <h3>Poortjes &amp; schijf</h3>
+        <p class="desc">Pas de geometrie van het sjoel-spel aan. Standaard volgt de PES 2026-opdracht.</p>
+        <div id="globalSliders" style="margin-top:8px;"></div>
+        <div class="dim-diagram" style="margin-top:12px;">
+          <svg id="dimSvg" viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg"></svg>
+        </div>
+      </div>
+
+      <div class="settings-section reset-card">
+        <div class="reset-header">
+          <div>
+            <h3 style="margin:0;">Standaardwaarden herstellen</h3>
+            <p class="desc" style="margin:4px 0 0;">Zet alle parameters terug naar de PES 2026-defaults.</p>
+          </div>
+          <button class="btn reset-action-btn" id="resetAllBtn">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;vertical-align:-2px;">
+              <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+            </svg>
+            Reset alles
+          </button>
+        </div>
+        <div class="reset-values" id="resetValues"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-info">
+    <div class="info-content">
+      <h2>Wat toont dit dashboard?</h2>
+      <p><b>Dashboard</b> toont de gaussverdeling van schijfposities met poortkans-berekening. <b>Landingen</b> toont waar elke schijf landde. <b>Info</b> beschrijft de berekening.</p>
+      <h2>Speelvlak (PES 2026)</h2>
+      <ul>
+        <li>Sjoelbak: 600 × 1840 mm schuifgedeelte. Lanceergedeelte (oranje): 600 × 600 mm.</li>
+        <li>Poortjes onderaan op het einde van de bak: standaard <b>5 poorten</b> met scores <b>2 - 5 - 3 - 1 - 4</b> (van links naar rechts).</li>
+        <li>Poortbreedte 80 mm, hoogte 20 mm.</li>
+        <li>15 sjoelschijven per team. Schijf Ø52 mm, dikte 12,5 mm.</li>
+        <li>Bonus per set (1 schijf in elk vak): <b>15 punten</b>.</li>
+        <li>"Sjoelen voor ingenieurs": twee bakken tegen elkaar, schijven kunnen doorschuiven naar de tegenpartij — vink "Tegenstander tonen" aan om dit zichtbaar te maken.</li>
+      </ul>
+      <h2>Meetpunt van de schijf</h2>
+      <p>Standaard wordt de <b>linkerbovenhoek</b> (vanuit werper-perspectief) gebruikt. Voor de middencoördinaten wordt automatisch <code>+D/2</code> in X en <code>−D/2</code> in Y toegepast.</p>
+      <h2>Hoe wordt de poortkans berekend?</h2>
+      <ol>
+        <li>Marge per poort = <b>(W − D) / 2</b>. Voor W=80, D=52 → ±14 mm.</li>
+        <li>X-positie volgt een normale verdeling met gemiddelde μ en standaardafwijking σ.</li>
+        <li>Totale kans = som van kansen om binnen elk trefvenster te vallen.</li>
+      </ol>
+      <div class="formula">P = Σᵢ [Φ((cᵢ+w−μ)/σ) − Φ((cᵢ−w−μ)/σ)]</div>
+      <h2>Data</h2>
+      <p>Standaard 3 runs (Run 1: 20 metingen · Run 2: 100 · Run 3: 100). Voeg je eigen runs toe via de <b>Runs</b>-tab, of importeer een eerder bewaard JSON-bestand met de knop bovenaan.</p>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+let rawRuns = [
+  { label: 'Run 1',
+    x: [320,295,273,255,295,150,300,290,255,265,245,295,285,320,260,285,280,300,245,305,250,300,300,290,260,325,290,285,270,305,275,330,260,270,290,320,325,255,290,310,345,275,275,270,370,275,275,300,280,320,300,170,270,240,270,250,285,215,305,315,255,330,285,260,300,270,300,260,255,315,215,215,280,305,280,220,310,310,300,260,100,325,330,310,295,310,295,280,260,275,280,280,305,265,280,300,210,270,250,305],
+    y: [270,510,300,740,130,-570,300,50,540,360,-245,140,80,70,190,-245,590,580,580,290,290,390,370,230,-150,470,-125,650,20,430,590,290,420,270,650,360,-100,20,80,-160,-340,520,370,400,500,0,550,-200,450,100,60,-800,190,540,-350,500,400,-70,210,120,-60,30,250,310,50,220,-290,550,-290,270,-730,-460,220,-280,-240,100,-110,110,-170,0,-720,-160,-240,-270,0,-600,-240,-530,280,290,390,190,380,-180,-120,0,-300,20,-230,100] }
+];
+
+// PES 2026 specs:
+const PLATE_W = 600;
+const PLATE_H = 1840;          // schuifgedeelte
+const SYSTEM_H = 600;          // lanceergedeelte
+const SCORES_LR = [2, 5, 3, 1, 4]; // gates from left to right (PES 2026)
+
+const MEAS_OFFSETS = {
+  'tl':     { dx: +1, dy: -1 },
+  'tr':     { dx: -1, dy: -1 },
+  'bl':     { dx: +1, dy: +1 },
+  'br':     { dx: -1, dy: +1 },
+  'center': { dx:  0, dy:  0 }
+};
+let measRef = 'tl';
+
+// Defaults: PES 2026 → 5 gates of 80mm. Choose default gap so the row fits nicely:
+// Total row width = 5*80 + 4*g. Plate is 600mm. Pick g = 20 → total = 480 mm, leaves 60 mm side wall per side.
+const defaults = { numGates: 5, gateW: 80, gateGap: 20, diskD: 52, gateOffset: 0 };
+const settings = { ...defaults };
+
+// Currently selected runs (one or more). Default: the single run (index 0).
+let selectedRuns = new Set([0]);
+
+// ===== GROUPS SYSTEM =====
+// Two groups (A and B) each have their own runs, selection, settings, measurement ref, tube length, and name.
+// The currently active group's state is mirrored in the top-level variables (rawRuns, settings, etc.).
+const DEFAULT_RUNS_SJOELMONSTER = JSON.parse(JSON.stringify(rawRuns)); // group A starts with the 100-meting Run 1
+const DEFAULT_RUNS_PEASHOOTER = []; // group B starts empty
+function makeFreshGroupState(name, defaultRuns, defaultSelected) {
+  return {
+    name: name,
+    rawRuns: JSON.parse(JSON.stringify(defaultRuns)),
+    selectedRuns: defaultSelected.slice(),
+    settings: { ...defaults },
+    measRef: 'tl',
+    tubeLength: 260
+  };
+}
+let groups = {
+  A: makeFreshGroupState('Groep 2 (Sjoelmonster)', DEFAULT_RUNS_SJOELMONSTER, [0]),
+  B: makeFreshGroupState('Groep 1 (Pea Shooter)', DEFAULT_RUNS_PEASHOOTER, [])
+};
+let activeGroup = 'A';
+
+function saveCurrentToGroup() {
+  // Snapshot the live state into the active group's slot
+  groups[activeGroup].rawRuns = JSON.parse(JSON.stringify(rawRuns));
+  groups[activeGroup].selectedRuns = Array.from(selectedRuns);
+  groups[activeGroup].settings = { ...settings };
+  groups[activeGroup].measRef = measRef;
+  groups[activeGroup].tubeLength = tubeLength;
+  persistGroups();
+}
+
+function loadFromGroup(key) {
+  // Pull the chosen group into the live state variables
+  const g = groups[key];
+  rawRuns = JSON.parse(JSON.stringify(g.rawRuns));
+  selectedRuns = new Set(g.selectedRuns);
+  Object.assign(settings, g.settings);
+  // Keep the existing reactivity by mutating the original `settings` object
+  measRef = g.measRef;
+  tubeLength = g.tubeLength;
+  activeGroup = key;
+}
+
+function persistGroups() {
+  try {
+    localStorage.setItem('sjoel-groups', JSON.stringify({ version: 5, groups, activeGroup }));
+  } catch(e) { /* localStorage may be unavailable */ }
+}
+
+function restoreGroupsFromStorage() {
+  try {
+    const raw = localStorage.getItem('sjoel-groups');
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    if (!data.version || data.version < 5) {
+      localStorage.removeItem('sjoel-groups');
+      return false;
+    }
+    if (!data.groups || !data.groups.A || !data.groups.B) return false;
+    groups = data.groups;
+    activeGroup = data.activeGroup === 'B' ? 'B' : 'A';
+    loadFromGroup(activeGroup);
+    return true;
+  } catch(e) { return false; }
+}
+
+function getActiveRunLabels() {
+  return Array.from(selectedRuns).sort((a,b)=>a-b).map(i => rawRuns[i] && rawRuns[i].label).filter(Boolean);
+}
+
+function getCombinedRun() {
+  // Combine all selected runs into one virtual run with corrected coordinates
+  const off = MEAS_OFFSETS[measRef];
+  const D = settings.diskD;
+  const xs = [], ys = [], runIdx = [];
+  Array.from(selectedRuns).sort((a,b)=>a-b).forEach(i => {
+    const r = rawRuns[i];
+    if (!r) return;
+    r.x.forEach((v, k) => {
+      xs.push(v + off.dx * D / 2);
+      ys.push(r.y[k] + off.dy * D / 2);
+      runIdx.push(i);
+    });
+  });
+  return { x: xs, y: ys, runIdx };
+}
+
+function getCorrectedRun() {
+  // Backwards-compatible alias — returns combined data of all selected runs
+  return getCombinedRun();
+}
+
+// Plate is rendered upside-down (sjoelsysteem at bottom, poortjes at top).
+// Y > 0 (between gates and thrower) → drawn lower on canvas
+// Y < 0 (past gates) → drawn higher on canvas
+function userToPlate(x, y) { return { px: x, py: y }; }
+
+let currentAxis = 'x', chart;
+let landingMode = 'scatter', dualView = false;
+let tubeLength = 260; // mm of tube between the two team plates (in dual view)
+
+const mean = a => a.reduce((s,v)=>s+v,0)/a.length;
+const std = a => { const m = mean(a); return Math.sqrt(a.reduce((s,v)=>s+(v-m)**2,0)/a.length); };
+const gauss = (x,mu,s) => (1/(s*Math.sqrt(2*Math.PI)))*Math.exp(-0.5*((x-mu)/s)**2);
+function erf(x){const sign=x<0?-1:1;x=Math.abs(x);const a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=0.3275911;const t=1/(1+p*x);const y=1-(((((a5*t+a4)*t)+a3)*t+a2)*t+a1)*t*Math.exp(-x*x);return sign*y;}
+const normCdf = (x,mu,s) => 0.5*(1+erf((x-mu)/(s*Math.sqrt(2))));
+const probInRange = (lo,hi,mu,s) => normCdf(hi,mu,s) - normCdf(lo,mu,s);
+function cssVar(name) { return getComputedStyle(document.body).getPropertyValue(name).trim(); }
+
+function getData() {
+  const r = getCorrectedRun();
+  return currentAxis === 'x' ? r.x : r.y;
+}
+function getXData() {
+  return getCorrectedRun().x;
+}
+function getXYData() {
+  const r = getCorrectedRun();
+  return r.x.map((x, i) => ({ x, y: r.y[i], runIdx: r.runIdx ? r.runIdx[i] : 0 }));
+}
+
+function gateCenters(numGates, gateW, gateGap, centerX) {
+  const totalW = numGates * gateW + (numGates - 1) * gateGap;
+  const start = centerX - totalW / 2;
+  const centers = [];
+  for (let i = 0; i < numGates; i++) centers.push(start + gateW/2 + i * (gateW + gateGap));
+  return { centers, totalW, start, end: start + totalW };
+}
+
+const sliderDefs = [
+  { key: 'numGates', label: 'Aantal poortjes', min: 1, max: 9, step: 1, unit: '' },
+  { key: 'gateW', label: 'Poortbreedte', min: 40, max: 200, step: 1, unit: 'mm' },
+  { key: 'gateGap', label: 'Muurdikte', min: 0, max: 100, step: 1, unit: 'mm' },
+  { key: 'diskD', label: 'Schijfdiameter', min: 20, max: 100, step: 1, unit: 'mm' },
+  { key: 'gateOffset', label: 'Centrum-offset (vs midden plate)', min: -200, max: 200, step: 1, unit: 'mm' }
+];
+
+const RESET_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>';
+
+function buildSliderRow(def, prefix) {
+  const id = prefix + def.key;
+  return '<div class="slider-row">' +
+    '<label for="'+id+'_input">'+def.label+'</label>' +
+    '<input type="range" id="'+id+'_range" min="'+def.min+'" max="'+def.max+'" step="'+def.step+'" value="'+settings[def.key]+'" />' +
+    '<input type="number" class="num-input" id="'+id+'_input" min="'+def.min+'" max="'+def.max+'" step="'+def.step+'" value="'+settings[def.key]+'" />' +
+    '<button class="reset-btn" data-key="'+def.key+'" title="Reset naar '+defaults[def.key]+def.unit+'">'+RESET_ICON+'</button>' +
+    '</div>';
+}
+
+function buildSliders(containerId, prefix, defs) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = defs.map(d => buildSliderRow(d, prefix)).join('');
+  defs.forEach(def => {
+    const id = prefix + def.key;
+    const range = document.getElementById(id + '_range');
+    const input = document.getElementById(id + '_input');
+    const reset = container.querySelector('.reset-btn[data-key="'+def.key+'"]');
+    range.addEventListener('input', () => {
+      settings[def.key] = +range.value;
+      input.value = range.value;
+      triggerRender();
+    });
+    input.addEventListener('input', () => {
+      let v = +input.value;
+      if (isNaN(v) || input.value === '') return;
+      v = Math.max(def.min, Math.min(def.max, v));
+      settings[def.key] = v;
+      range.value = v;
+      triggerRender();
+    });
+    input.addEventListener('blur', () => {
+      let v = +input.value;
+      if (isNaN(v) || input.value === '') v = defaults[def.key];
+      v = Math.max(def.min, Math.min(def.max, v));
+      input.value = v;
+      settings[def.key] = v;
+      range.value = v;
+      triggerRender();
+    });
+    reset.addEventListener('click', () => {
+      settings[def.key] = defaults[def.key];
+      range.value = defaults[def.key];
+      input.value = defaults[def.key];
+      triggerRender();
+    });
+  });
+}
+
+function syncSliders(prefix, defs) {
+  defs.forEach(def => {
+    const id = prefix + def.key;
+    const range = document.getElementById(id + '_range');
+    const input = document.getElementById(id + '_input');
+    if (range) range.value = settings[def.key];
+    if (input) input.value = settings[def.key];
+  });
+}
+
+function triggerRender() {
+  syncSliders('g_', sliderDefs);
+  document.getElementById('measDiamLbl').textContent = settings.diskD;
+  renderChart();
+  drawDimDiagram();
+  renderResetValues();
+  renderCompareTable();
+  if (document.getElementById('panel-landing').classList.contains('active')) renderLanding();
+}
+
+function renderResetValues() {
+  const box = document.getElementById('resetValues');
+  if (!box) return;
+  const rows = [
+    { label: 'Meetpunt', cur: measRefLabel(measRef), def: measRefLabel('tl'), modified: measRef !== 'tl' },
+    ...sliderDefs.map(d => ({
+      label: d.label,
+      cur: settings[d.key] + (d.unit ? ' ' + d.unit : ''),
+      def: defaults[d.key] + (d.unit ? ' ' + d.unit : ''),
+      modified: settings[d.key] !== defaults[d.key]
+    }))
+  ];
+  box.innerHTML = rows.map(r =>
+    '<div class="reset-row' + (r.modified ? ' modified' : '') + '">' +
+      '<div class="reset-label">' + r.label + '</div>' +
+      '<div class="reset-current">' + r.cur + '</div>' +
+      '<div class="reset-default">' +
+        (r.modified ? 'standaard: <s>' + r.def + '</s>' : 'op standaardwaarde') +
+      '</div>' +
+    '</div>'
+  ).join('');
+}
+
+function measRefLabel(key) {
+  return {
+    'tl': 'Linksboven',
+    'tr': 'Rechtsboven',
+    'bl': 'Linksonder',
+    'br': 'Rechtsonder',
+    'center': 'Midden'
+  }[key] || key;
+}
+
+function showDashboardEmpty() {
+  document.getElementById('dashboardEmpty').style.display = 'block';
+  document.getElementById('dashboardContent').style.display = 'none';
+  if (chart) { chart.destroy(); chart = null; }
+}
+function hideDashboardEmpty() {
+  document.getElementById('dashboardEmpty').style.display = 'none';
+  document.getElementById('dashboardContent').style.display = '';
+}
+function showLandingEmpty() {
+  document.getElementById('landingEmpty').style.display = 'block';
+  document.getElementById('landingContent').style.display = 'none';
+}
+function hideLandingEmpty() {
+  document.getElementById('landingEmpty').style.display = 'none';
+  document.getElementById('landingContent').style.display = '';
+}
+
+function renderChart() {
+  const data = getData();
+  if (data.length === 0) {
+    showDashboardEmpty();
+    return;
+  }
+  // Hide any empty-state placeholder
+  hideDashboardEmpty();
+  const mu = mean(data), sigma = std(data);
+  const mn = Math.min(...data), mx = Math.max(...data);
+  const pad = (mx-mn)*0.15 || 50;
+  const lo = mn - pad, hi = mx + pad;
+  const steps = 220;
+  const step = (hi-lo)/steps;
+  const xs = Array.from({length:steps+1},(_,i)=>lo+i*step);
+  const ys = xs.map(x=>gauss(x,mu,sigma));
+  const p68lo = mu-sigma, p68hi = mu+sigma;
+  const p95lo = mu-2*sigma, p95hi = mu+2*sigma;
+  const p99lo = mu-3*sigma, p99hi = mu+3*sigma;
+  const labels = xs.map(x=>x.toFixed(1));
+
+  const accentColor = cssVar('--accent') || '#3b82f6';
+  const mutedColor = cssVar('--muted') || '#6b7280';
+  const lineColor = cssVar('--line') || '#e5e7eb';
+  const cardColor = cssVar('--card') || '#fff';
+  const textColor = cssVar('--text') || '#1a1a1a';
+
+  if (chart) chart.destroy();
+
+  // Plugin: draw gates with two visual layers behind the gauss curve.
+  // Outer band  = physical gate width (W mm, e.g. 80mm) — shows where the opening is.
+  // Inner band  = scoring zone for the disk centre (W - D mm wide, e.g. 28mm) — where
+  //               the disk's midpoint must land for it to pass through (accounts for radius).
+  // Only on the X-axis (gates are an X-position phenomenon).
+  const gatesPlugin = {
+    id: 'gateBands',
+    beforeDatasetsDraw(chartInstance) {
+      if (currentAxis !== 'x') return;
+      const { numGates: n, gateW: W, gateGap: gap, diskD: D, gateOffset: offset } = settings;
+      const margin = (W - D) / 2;  // half-width of the disk-centre scoring zone
+      if (n <= 0) return;
+      const center = PLATE_W / 2 + offset;
+      const { centers } = gateCenters(n, W, gap, center);
+      const scores = gateScores(n);
+      const ctx = chartInstance.ctx;
+      const xScale = chartInstance.scales.x;
+      const yScale = chartInstance.scales.y;
+      const chartTop = yScale.top;
+      const chartBottom = yScale.bottom;
+
+      const xToPixel = (dataX) => {
+        if (dataX <= lo) return xScale.left;
+        if (dataX >= hi) return xScale.right;
+        const frac = (dataX - lo) / (hi - lo);
+        return xScale.left + frac * (xScale.right - xScale.left);
+      };
+
+      ctx.save();
+      centers.forEach((c, i) => {
+        // Physical gate boundaries (the actual opening, W mm wide)
+        const gateLeft = c - W / 2, gateRight = c + W / 2;
+        // Scoring zone for disk centre (margin = (W - D) / 2 on each side of centre)
+        const scoreLeft = c - margin, scoreRight = c + margin;
+
+        // Skip if entirely outside visible range
+        if (gateRight < lo || gateLeft > hi) return;
+
+        const xGateL = xToPixel(gateLeft);
+        const xGateR = xToPixel(gateRight);
+
+        // OUTER: physical gate width — light fill + solid edges representing the walls
+        ctx.fillStyle = 'rgba(16,185,129,0.06)';
+        ctx.fillRect(xGateL, chartTop, xGateR - xGateL, chartBottom - chartTop);
+        // Solid green vertical lines = the physical walls of this poortje
+        ctx.strokeStyle = 'rgba(16,185,129,0.7)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(xGateL + 0.5, chartTop);
+        ctx.lineTo(xGateL + 0.5, chartBottom);
+        ctx.moveTo(xGateR - 0.5, chartTop);
+        ctx.lineTo(xGateR - 0.5, chartBottom);
+        ctx.stroke();
+
+        // INNER: scoring zone for disk centre (darker fill, no edges)
+        if (margin > 0) {
+          const xScoreL = xToPixel(scoreLeft);
+          const xScoreR = xToPixel(scoreRight);
+          ctx.fillStyle = 'rgba(16,185,129,0.22)';
+          ctx.fillRect(xScoreL, chartTop, xScoreR - xScoreL, chartBottom - chartTop);
+          // Dashed inner boundaries to mark where the disk-centre must land
+          ctx.strokeStyle = 'rgba(16,185,129,0.5)';
+          ctx.lineWidth = 1;
+          ctx.setLineDash([3, 3]);
+          ctx.beginPath();
+          ctx.moveTo(xScoreL + 0.5, chartTop);
+          ctx.lineTo(xScoreL + 0.5, chartBottom);
+          ctx.moveTo(xScoreR - 0.5, chartTop);
+          ctx.lineTo(xScoreR - 0.5, chartBottom);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+
+        // Score label and "poort i" label at top
+        const labelX = (xGateL + xGateR) / 2;
+        const labelY = chartTop + 14;
+        ctx.fillStyle = '#10b981';
+        ctx.font = '600 11px -apple-system, system-ui';
+        ctx.textAlign = 'center';
+        ctx.fillText(scores[i], labelX, labelY);
+        ctx.fillStyle = 'rgba(16,185,129,0.7)';
+        ctx.font = '500 9px -apple-system, system-ui';
+        ctx.fillText('poort ' + (i+1), labelX, labelY + 11);
+      });
+      ctx.restore();
+    }
+  };
+
+  chart = new Chart(document.getElementById('gc'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { data: xs.map((x,i)=>(x>=p99lo&&x<=p99hi)?ys[i]:null), fill:true, backgroundColor:'rgba(96,165,250,0.10)', borderColor:'transparent', pointRadius:0, tension:0.35, spanGaps:false },
+        { data: xs.map((x,i)=>(x>=p95lo&&x<=p95hi)?ys[i]:null), fill:true, backgroundColor:'rgba(96,165,250,0.22)', borderColor:'transparent', pointRadius:0, tension:0.35, spanGaps:false },
+        { data: xs.map((x,i)=>(x>=p68lo&&x<=p68hi)?ys[i]:null), fill:true, backgroundColor:'rgba(96,165,250,0.42)', borderColor:'transparent', pointRadius:0, tension:0.35, spanGaps:false },
+        { data: ys, fill:false, borderColor:accentColor, borderWidth:2, pointRadius:0, tension:0.35 }
+      ]
+    },
+    plugins: [gatesPlugin],
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      interaction:{ mode:'index', intersect:false },
+      plugins: {
+        legend:{ display:false },
+        tooltip:{
+          backgroundColor: cardColor, borderColor: lineColor, borderWidth:1,
+          titleColor: textColor, bodyColor: mutedColor,
+          padding:8, displayColors:false,
+          callbacks:{
+            title: items => currentAxis.toUpperCase() + ' = ' + parseFloat(items[0].label).toFixed(1) + ' mm',
+            label: item => item.datasetIndex===3 ? 'Dichtheid: ' + (item.parsed.y*100).toFixed(4) + '% / mm' : null,
+            filter: item => item.datasetIndex===3 && item.parsed.y!==null
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks:{ maxTicksLimit:10, callback:(v,i)=>parseFloat(labels[i]).toFixed(0), color: mutedColor, font:{size:11} },
+          title:{ display:true, text: currentAxis.toUpperCase() + '-positie midden schijf (mm)', color: mutedColor, font:{size:11} },
+          grid:{ color:'rgba(128,128,128,0.08)' }, border:{ color: lineColor }
+        },
+        y: {
+          ticks:{ callback:v=>(v*100).toFixed(3)+'%', maxTicksLimit:6, color: mutedColor, font:{size:11} },
+          title:{ display:true, text:'Kanswaarde (/mm)', color: mutedColor, font:{size:11} },
+          grid:{ color:'rgba(128,128,128,0.08)' }, border:{ color: lineColor }
+        }
+      }
+    }
+  });
+
+  document.getElementById('stats').innerHTML =
+    '<div class="stat"><p class="stat-label" data-tip="μ — gemiddelde landingspositie op de gekozen as. Geeft aan waar de schijven gemiddeld terechtkomen. Idealiter dicht bij het midden van de poortenrij.">Gemiddelde (μ)</p><p class="stat-val">'+mu.toFixed(1)+' mm</p></div>' +
+    '<div class="stat"><p class="stat-label" data-tip="σ — standaardafwijking. Een maat voor de spreiding van de worpen. Hoe kleiner σ, hoe consistenter de worp en hoe hoger de slaagkans.">Std. afwijking (σ)</p><p class="stat-val hl">'+sigma.toFixed(1)+' mm</p></div>' +
+    '<div class="stat"><p class="stat-label" data-tip="Laagste gemeten waarde in deze richting (extreemste worp links/onder).">Min</p><p class="stat-val">'+mn.toFixed(0)+' mm</p></div>' +
+    '<div class="stat"><p class="stat-label" data-tip="Hoogste gemeten waarde in deze richting (extreemste worp rechts/boven).">Max</p><p class="stat-val">'+mx.toFixed(0)+' mm</p></div>' +
+    '<div class="stat"><p class="stat-label" data-tip="Totaal aantal schijven in de geselecteerde meetreeks(en).">Metingen (n)</p><p class="stat-val">'+data.length+'</p></div>';
+
+  renderGate();
+}
+
+function gateScores(n) {
+  if (n === 5) return SCORES_LR.slice();
+  if (n === 4) return [2, 3, 4, 1];
+  // generic: assign 1..n
+  const arr = [];
+  for (let i = 1; i <= n; i++) arr.push(i);
+  return arr;
+}
+
+function renderGate() {
+  const xdata = getXData();
+  if (xdata.length === 0) return; // skip safely when no data; the dashboard empty state handles UI
+  const mu = mean(xdata), sigma = std(xdata);
+  const { numGates: n, gateW: W, gateGap: gap, diskD: D, gateOffset: offset } = settings;
+  // The gates are physically fixed in the sjoelbak, centered around the middle of the plate.
+  // gateOffset lets the user shift the row left/right if it's not perfectly centered.
+  const center = PLATE_W / 2 + offset;
+  const margin = (W - D) / 2;
+  const { centers, totalW } = gateCenters(n, W, gap, center);
+
+  document.getElementById('tTotalW').textContent = totalW.toFixed(0);
+  document.getElementById('tMargin').textContent = margin >= 0 ? margin.toFixed(0) : '—';
+  document.getElementById('tCenter').textContent = center.toFixed(0);
+  document.getElementById('tMu').textContent = mu.toFixed(1);
+  document.getElementById('tSigma').textContent = sigma.toFixed(1);
+
+  // per-gate probability
+  const scores = gateScores(n);
+  let total = 0;
+  const perGate = centers.map((c, i) => {
+    const p = margin > 0 ? probInRange(c - margin, c + margin, mu, sigma) : 0;
+    total += p;
+    return { c, p, score: scores[i] };
+  });
+  document.getElementById('tProb').textContent = (total*100).toFixed(1);
+
+  // per-gate table
+  let perGateHtml = '<tr><th>Poort</th><th>Centrum</th><th>Score</th><th>Kans</th></tr>';
+  perGate.forEach((g, i) => {
+    perGateHtml += '<tr><td>'+(i+1)+'</td><td>'+g.c.toFixed(0)+' mm</td>' +
+      '<td class="score">'+g.score+'</td><td>'+(g.p*100).toFixed(1)+'%</td></tr>';
+  });
+  // Expected points per throw
+  const expPts = perGate.reduce((s,g) => s + g.p * g.score, 0);
+  perGateHtml += '<tr><td colspan="3" style="text-align:right;color:var(--muted);">Verwachte punten / worp:</td><td class="score">'+expPts.toFixed(2)+'</td></tr>';
+  document.getElementById('perGateTable').innerHTML = perGateHtml;
+
+  // Refresh target-probability calculator with current settings
+  renderTargetProb(mu, sigma);
+}
+
+// Inverse: given a target slaagkans P*, find the σ needed (with mu at the row center).
+// Uses binary search since P(σ) is monotonically decreasing in σ.
+function computeRequiredSigma(targetProb, settings) {
+  const { numGates: n, gateW: W, gateGap: gap, diskD: D } = settings;
+  const margin = (W - D) / 2;
+  if (margin <= 0) return null; // impossible: disk wider than gate
+  if (targetProb <= 0) return Infinity;
+  if (targetProb >= 1) return 0;
+
+  // Use μ at the optimal position: center of the gate row (0 relative to row center).
+  // Gate centers relative to row center for n gates:
+  const totalW = n * W + (n - 1) * gap;
+  const start = -totalW / 2;
+  const centers = [];
+  for (let i = 0; i < n; i++) centers.push(start + W/2 + i * (W + gap));
+
+  function probAtSigma(s) {
+    if (s < 0.01) return n > 0 ? 1 : 0; // very tight: assume always-through if any gate exists
+    let p = 0;
+    for (const c of centers) {
+      p += probInRange(c - margin, c + margin, 0, s); // μ = 0 (at row center)
+    }
+    return p;
+  }
+
+  // Edge case: even σ = 0.5mm may not give 100% (slits don't cover full row)
+  const pMax = probAtSigma(0.5);
+  if (targetProb > pMax) return null; // impossible — gates don't cover enough of the row
+
+  let lo = 0.5, hi = 1000;
+  for (let iter = 0; iter < 60; iter++) {
+    const mid = (lo + hi) / 2;
+    const p = probAtSigma(mid);
+    if (p > targetProb) lo = mid; else hi = mid;
+  }
+  return (lo + hi) / 2;
+}
+
+function renderTargetProb(currentMu, currentSigma) {
+  const resultEl = document.getElementById('targetProbResult');
+  const inputEl = document.getElementById('targetProb');
+  if (!resultEl || !inputEl) return;
+  let target = parseFloat(inputEl.value);
+  if (isNaN(target) || target < 1) target = 1;
+  if (target > 99) target = 99;
+  const targetFrac = target / 100;
+  const requiredSigma = computeRequiredSigma(targetFrac, settings);
+  const currentProb = probabilityForRun(currentMu, currentSigma, settings);
+  const optimalMu = PLATE_W / 2 + settings.gateOffset;
+
+  let html = '';
+  if (requiredSigma === null) {
+    html = '<div class="tp-warn">Die slaagkans is niet haalbaar met de huidige poortconfiguratie. Verklein de poortbreedte of vergroot de tussenruimte in <b>Instellingen</b>.</div>';
+  } else {
+    // Compute how much improvement is needed
+    const sigmaReduction = currentSigma - requiredSigma;
+    const sigmaRatio = currentSigma > 0 ? (requiredSigma / currentSigma) : 0;
+
+    html =
+      '<p class="tp-headline">Om <b style="color:var(--text);">' + target.toFixed(0) + '%</b> slaagkans te halen, moet je dit bereiken:</p>' +
+      '<div class="tp-row">' +
+        '<span class="tp-label">Gemiddelde landing (μ)<small>op de X-as, optimaal richtpunt</small></span>' +
+        '<span class="tp-val">' + optimalMu.toFixed(0) + ' <small>mm</small></span>' +
+      '</div>' +
+      '<div class="tp-row">' +
+        '<span class="tp-label">Standaardafwijking (σ)<small>maximale spreiding in X-richting</small></span>' +
+        '<span class="tp-val">≤ ' + requiredSigma.toFixed(1) + ' <small>mm</small></span>' +
+      '</div>' +
+      '<div class="tp-summary">' +
+        'Huidige situatie: μ = <b>' + currentMu.toFixed(1) + ' mm</b>, σ = <b>' + currentSigma.toFixed(1) + ' mm</b> → slaagkans <b>' + (currentProb * 100).toFixed(1) + '%</b>.<br>';
+
+    if (currentSigma <= requiredSigma) {
+      html += '<span style="color:#10b981;font-weight:500;">✓ Je huidige σ is al laag genoeg!</span> Richt op μ ≈ ' + optimalMu.toFixed(0) + ' mm en je haalt minstens ' + target.toFixed(0) + '%.';
+    } else {
+      const pctReduce = ((sigmaReduction / currentSigma) * 100).toFixed(0);
+      html += 'Je moet je σ met <b>' + sigmaReduction.toFixed(1) + ' mm</b> verlagen (≈ ' + pctReduce + '% consistenter werpen). Dit kan door: stabielere worp-techniek, gewichtsverdeling van de schijf optimaliseren, of een geleidingssysteem aan het lanceermechanisme toevoegen.';
+    }
+    html += '</div>';
+  }
+  resultEl.innerHTML = html;
+}
+
+function probabilityForRun(mu, sigma, settings) {
+  const { numGates: n, gateW: W, gateGap: gap, diskD: D, gateOffset: offset } = settings;
+  const margin = (W - D) / 2;
+  if (margin <= 0 || sigma <= 0) return 0;
+  const center = PLATE_W / 2 + offset;
+  const { centers } = gateCenters(n, W, gap, center);
+  let p = 0;
+  for (const c of centers) p += probInRange(c - margin, c + margin, mu, sigma);
+  return p;
+}
+
+
+function renderLanding() {
+  const pts = getXYData();
+  // Empty state: no runs / no points → show placeholder, skip the rest
+  if (pts.length === 0) {
+    showLandingEmpty();
+    return;
+  }
+  hideLandingEmpty();
+  const activeLabel = document.getElementById('activeRunLabel');
+  if (activeLabel) {
+    const labels = getActiveRunLabels();
+    activeLabel.textContent = labels.length ? labels.join(' + ') : '—';
+  }
+  // Update plate wrap class for dual/single (drawPlate sets the actual height directly).
+  const wrap = document.getElementById('plateWrap');
+  wrap.className = 'plate-wrap ' + (dualView ? 'dual' : 'single');
+  // Clear any legacy inline styles
+  wrap.style.aspectRatio = '';
+  wrap.style.width = '';
+  // height is set by drawPlate
+  // Update landing-row layout
+  const row = document.querySelector('#panel-landing .landing-row');
+  if (row) row.classList.toggle('dual-mode', dualView);
+  document.getElementById('plateTitle').textContent =
+    dualView ? 'Sjoelen voor ingenieurs — beide bakken' : 'Speelvlak — bovenaanzicht';
+  document.getElementById('plateDesc').textContent =
+    dualView
+      ? 'Twee bakken tegen elkaar. ' + GROUP_DISPLAY_NAMES[activeGroup === 'A' ? 'B' : 'A'] + ' boven, ' + GROUP_DISPLAY_NAMES[activeGroup] + ' onder. Schijven met negatieve Y schuiven door naar de tegenpartij.'
+      : 'Sjoelbak 600 × 1840 mm. Sjoelsysteem onderaan (werpkant), poortjes bovenaan.';
+  // Defer drawPlate to next frame so the aspect-ratio CSS has been applied to the wrap
+  requestAnimationFrame(() => drawPlate(pts));
+  // Install ResizeObserver once: re-render whenever plate-card width changes.
+  // We observe plate-card (not plate-wrap) because drawPlate sets plate-wrap's height
+  // which would otherwise cause a render loop.
+  if (!renderLanding._observerInstalled) {
+    const cardEl = document.querySelector('#panel-landing .plate-card');
+    let lastW = 0;
+    const ro = new ResizeObserver(entries => {
+      for (const ent of entries) {
+        const w = ent.contentRect.width;
+        if (Math.abs(w - lastW) > 0.5) {
+          lastW = w;
+          if (document.getElementById('panel-landing').classList.contains('active')) {
+            drawPlate(getXYData());
+          }
+        }
+      }
+    });
+    if (cardEl) ro.observe(cardEl);
+    renderLanding._observerInstalled = true;
+  }
+  renderZoneTable(pts);
+  computeLandingProb(pts);
+  drawDimDiagram();
+  document.getElementById('heatLegendBox').style.display =
+    (landingMode === 'heatmap' || landingMode === 'both') ? 'flex' : 'none';
+}
+
+function drawDimDiagram() {
+  const svg = document.getElementById('dimSvg');
+  if (!svg) return;
+  const W = settings.gateW;
+  const D = settings.diskD;
+  const gap = settings.gateGap;
+  const margin = (W - D) / 2;
+
+  // ViewBox geometry. Show 1 poort + wall + 1 more poort, top-down view.
+  const VB_W = 400, VB_H = 180;
+  svg.setAttribute('viewBox', '0 0 ' + VB_W + ' ' + VB_H);
+
+  const visibleMM = W * 2 + gap;
+  const padL = 40, padR = 40;
+  const drawW = VB_W - padL - padR;
+  const scale = drawW / visibleMM;
+
+  // Wall depth scales with disk so disk always fits visually
+  const minWallH = D * scale + 28;
+  const wallH = Math.max(60, minWallH);
+  const wallTop = 56;
+  const wallBot = wallTop + wallH;
+
+  // Gate 1
+  const g1Left = padL;
+  const g1Right = padL + W * scale;
+  // Middle wall
+  const wLeft = g1Right;
+  const wRight = wLeft + gap * scale;
+  // Gate 2
+  const g2Left = wRight;
+  const g2Right = g2Left + W * scale;
+
+  // Trefvenster centered in gate 1
+  const winLeft = g1Left + (W * scale - 2 * margin * scale) / 2;
+  const winRight = winLeft + 2 * margin * scale;
+
+  // Disk in gate 1
+  const diskCx = g1Left + (W * scale) / 2;
+  const diskCy = wallTop + wallH / 2;
+  const diskR = (D / 2) * scale;
+
+  let s = '';
+
+  // Side walls (end caps)
+  const sideExt = 16;
+  s += '<rect class="dim-wall" x="' + (g1Left - sideExt) + '" y="' + wallTop + '" width="' + sideExt + '" height="' + wallH + '" stroke-width="0.8"/>';
+  s += '<rect class="dim-wall" x="' + g2Right + '" y="' + wallTop + '" width="' + sideExt + '" height="' + wallH + '" stroke-width="0.8"/>';
+
+  // Middle wall
+  s += '<rect class="dim-wall" x="' + wLeft + '" y="' + wallTop + '" width="' + (wRight - wLeft) + '" height="' + wallH + '" stroke-width="0.8"/>';
+
+  // Trefvenster (green margin zone) inside gate 1
+  if (margin > 0) {
+    s += '<rect class="dim-margin" x="' + winLeft + '" y="' + wallTop + '" width="' + (winRight - winLeft) + '" height="' + wallH + '"/>';
+  }
+
+  // Disk
+  const diskFits = margin > 0;
+  s += '<circle cx="' + diskCx + '" cy="' + diskCy + '" r="' + diskR + '" fill="' +
+       (diskFits ? 'rgba(220,38,38,0.15)' : 'rgba(220,38,38,0.10)') + '" stroke="var(--danger)" stroke-width="1.4"/>';
+
+  // Top dimension line for gate 1 width and wall width
+  const dimY1 = 30;
+  s += dimLine(g1Left, dimY1, g1Right, dimY1, W + ' mm');
+  s += dimLine(wLeft, dimY1, wRight, dimY1, gap + ' mm');
+
+  // Labels above the dim line (well above so no overlap)
+  s += '<text class="dim-label" x="' + ((g1Left + g1Right) / 2) + '" y="14" text-anchor="middle">poort</text>';
+  s += '<text class="dim-label" x="' + ((wLeft + wRight) / 2) + '" y="14" text-anchor="middle">muur</text>';
+
+  // Bottom dimension line: disk diameter Ø
+  const dimY2 = wallBot + 24;
+  s += dimLine(diskCx - diskR, dimY2, diskCx + diskR, dimY2, 'Ø' + D + ' mm');
+
+  // Margin badge (below the disk diameter line, smaller, in green)
+  if (diskFits) {
+    s += '<text x="' + diskCx + '" y="' + (dimY2 + 18) + '" text-anchor="middle" class="dim-margin-label">marge ±' + margin.toFixed(0) + ' mm</text>';
+  } else {
+    s += '<text x="' + diskCx + '" y="' + (dimY2 + 18) + '" text-anchor="middle" fill="var(--danger)" font-size="11" font-weight="600">past niet door de poort!</text>';
+  }
+
+  svg.innerHTML = s;
+}
+
+function dimLine(x1, y, x2, y2, label) {
+  // Horizontal dim line with tick marks at both ends + centered label
+  const tickH = 5;
+  // Approximate label width based on character count
+  const labelW = Math.max(36, label.length * 6.5 + 8);
+  const cx = (x1 + x2) / 2;
+  return ''
+    + '<line class="dim-stroke" x1="'+x1+'" y1="'+y+'" x2="'+x2+'" y2="'+y+'" stroke-width="0.7"/>'
+    + '<line class="dim-stroke" x1="'+x1+'" y1="'+(y-tickH)+'" x2="'+x1+'" y2="'+(y+tickH)+'" stroke-width="0.7"/>'
+    + '<line class="dim-stroke" x1="'+x2+'" y1="'+(y-tickH)+'" x2="'+x2+'" y2="'+(y+tickH)+'" stroke-width="0.7"/>'
+    + '<rect x="'+(cx - labelW/2)+'" y="'+(y - 8)+'" width="'+labelW+'" height="14" fill="var(--bg-soft)" rx="2"/>'
+    + '<text class="dim-text-val" x="'+cx+'" y="'+(y + 3)+'" text-anchor="middle">'+label+'</text>';
+}
+
+function computeLandingProb(pts) {
+  const xs = pts.map(p=>p.x);
+  const mu = mean(xs), sigma = std(xs);
+  const { numGates: n, gateW: W, gateGap: gap, diskD: D, gateOffset: offset } = settings;
+  const margin = (W - D) / 2;
+  // Gates are physically positioned around the centre of the plate.
+  const center = PLATE_W / 2 + offset;
+  const { centers, start, end } = gateCenters(n, W, gap, center);
+  let prob = 0;
+  if (margin > 0) centers.forEach(c => prob += probInRange(c - margin, c + margin, mu, sigma));
+  document.getElementById('landingProb').textContent = (prob*100).toFixed(1);
+
+  const scores = gateScores(n);
+
+  // === EMPIRICAL ===
+  // Een schijf is door een poort gegaan als haar Y < 0 (voorbij de poortjeslijn).
+  // Welke poort? We kijken naar de X-positie:
+  //   - Schijf telt als gescoord wanneer hij IN de buis zit (overshoot ≤ tubeLength).
+  //     Als tubeLength = 0 (geen fysieke buis ingesteld), telt elke schijf met Y < 0 zoals voorheen.
+  //   - Schijven die door de buis heen schieten (overshoot > tubeLength) tellen NIET.
+  //   - Schijven met Y ≥ 0 zijn niet door de poortjes en tellen niet.
+  const empPerGate = centers.map(() => 0);
+  let empTotalIn = 0;
+  let empOvershot = 0; // disks that flew past the tube — count as miss
+  pts.forEach(p => {
+    if (p.y >= 0) return;
+    const overshoot = -p.y;
+    // If there's a tube and disk flew past it, it doesn't score.
+    if (tubeLength > 0 && overshoot > tubeLength) {
+      empOvershot++;
+      return;
+    }
+    // Find nearest gate by X distance to centre
+    let bestIdx = 0, bestDist = Infinity;
+    for (let i = 0; i < centers.length; i++) {
+      const d = Math.abs(p.x - centers[i]);
+      if (d < bestDist) { bestDist = d; bestIdx = i; }
+    }
+    empPerGate[bestIdx]++;
+    empTotalIn++;
+  });
+  const empMisses = pts.length - empTotalIn;
+  const empPoints = empPerGate.reduce((s, cnt, i) => s + cnt * scores[i], 0);
+
+  // === SCORE TABLE ===
+  // Twee kolommen per poort: empirisch (gemeten op deze data) en theoretisch (volgens normaalverdeling)
+  let html = '<tr><th>Poort</th><th>X-bereik</th><th>Score</th>' +
+    '<th title="Aantal schijven uit de gemeten data dat in deze poort terecht kwam">Gemeten</th>' +
+    '<th title="Theoretische kans volgens gaussverdeling (μ + σ)">Theor. kans</th></tr>';
+
+  centers.forEach((c, i) => {
+    const lo = c - margin, hi = c + margin;
+    const theorP = margin > 0 ? probInRange(lo, hi, mu, sigma) : 0;
+    html += '<tr>' +
+      '<td>'+(i+1)+'</td>' +
+      '<td style="font-size:11px;color:var(--muted);">'+lo.toFixed(0)+'–'+hi.toFixed(0)+'</td>' +
+      '<td class="score">'+scores[i]+'</td>' +
+      '<td>'+empPerGate[i]+'×</td>' +
+      '<td>'+(theorP*100).toFixed(1)+'%</td>' +
+      '</tr>';
+  });
+  document.getElementById('scoreTable').innerHTML = html;
+
+  // === TOTALS BLOCK ===
+  const total = pts.length;
+  const empProb = total > 0 ? empTotalIn / total : 0;
+  const expPtsTheor = centers.reduce((s, c, i) => {
+    const p = margin > 0 ? probInRange(c - margin, c + margin, mu, sigma) : 0;
+    return s + p * scores[i];
+  }, 0);
+
+  // Count "before gates" (Y >= 0, on TEAM 1's plate — no point)
+  const empOnTeam1 = pts.filter(p => p.y >= 0).length;
+  const opponentName = GROUP_DISPLAY_NAMES[activeGroup === 'A' ? 'B' : 'A'];
+  const tubeActive = tubeLength > 0;
+
+  // Build the grid dynamically so we only show "Achter de buis" when tubeLength > 0
+  let totalsHTML = '<div class="totals-grid">' +
+      '<div class="totals-cell">' +
+        '<div class="totals-label">Aantal schijven</div>' +
+        '<div class="totals-val">'+total+'</div>' +
+      '</div>' +
+      '<div class="totals-cell good">' +
+        '<div class="totals-label">' + (tubeActive ? 'In buis (scoort)' : 'Door een poort') + '</div>' +
+        '<div class="totals-val">'+empTotalIn+'<small> / '+total+'</small></div>' +
+        '<div class="totals-sub">'+(empProb*100).toFixed(1)+'% slagingspercentage</div>' +
+      '</div>' +
+      '<div class="totals-cell bad">' +
+        '<div class="totals-label">Voor de poortjes</div>' +
+        '<div class="totals-val">'+empOnTeam1+'<small> / '+total+'</small></div>' +
+        '<div class="totals-sub">'+((empOnTeam1/total||0)*100).toFixed(1)+'% niet door poort</div>' +
+      '</div>';
+
+  if (tubeActive) {
+    totalsHTML +=
+      '<div class="totals-cell bad">' +
+        '<div class="totals-label">Achter de buis</div>' +
+        '<div class="totals-val">'+empOvershot+'<small> / '+total+'</small></div>' +
+        '<div class="totals-sub">' + ((empOvershot/total||0)*100).toFixed(1) + '% naar ' + escapeHtml(opponentName) + '</div>' +
+      '</div>';
+  }
+
+  totalsHTML +=
+      '<div class="totals-cell">' +
+        '<div class="totals-label">Totaal gescoorde punten</div>' +
+        '<div class="totals-val">'+empPoints+'</div>' +
+        '<div class="totals-sub">'+(empPoints/total).toFixed(2)+' pt/worp gemiddeld</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="totals-compare">' +
+      '<span><b>Gemeten</b> = wat er écht ' + (tubeActive ? 'in de buis lag' : 'door de poorten ging') + ' (op basis van de meetdata).</span>' +
+      '<span><b>Theoretisch</b> = wat de gaussverdeling voorspelt (μ='+mu.toFixed(0)+', σ='+sigma.toFixed(0)+').</span>' +
+      '<span>Theoretische slagingskans: <b>'+(prob*100).toFixed(1)+'%</b> · ' +
+      'Theoretisch verwacht punten/worp: <b>'+expPtsTheor.toFixed(2)+'</b></span>' +
+    '</div>';
+
+  document.getElementById('totalsBox').innerHTML = totalsHTML;
+}
+
+function drawPlate(points) {
+  const canvas = document.getElementById('plateCanvas');
+  const ctx = canvas.getContext('2d');
+  const rect = canvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  // If canvas isn't sized yet (initial render before layout settles), retry after a frame
+  if (!rect.width) {
+    requestAnimationFrame(() => drawPlate(points));
+    return;
+  }
+  // Compute target dimensions DIRECTLY from the layout intent (plate aspect ratio),
+  // not from rect.height which can lag behind the CSS aspect-ratio computation.
+  const TUBE = dualView ? tubeLength : 0;
+  const totalMM = dualView
+    ? (PLATE_H * 2 + TUBE)
+    : PLATE_H;
+  const cw = rect.width;
+  // Force the canvas height to match the plate aspect ratio exactly.
+  // This makes drawPlate independent of any race condition with CSS aspect-ratio.
+  const ch = cw * (totalMM / PLATE_W);
+  canvas.width = cw * dpr; canvas.height = ch * dpr;
+  canvas.style.width = cw + 'px'; canvas.style.height = ch + 'px';
+  // Also force the plate-wrap to that height — defeats any stale layout state
+  canvas.parentElement.style.height = ch + 'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,cw,ch);
+
+  // Layout (180° flipped): TEAM 2 above (no system box), TEAM 1 below with system at bottom.
+  const plateScale = cw / PLATE_W;
+  const ox = 0;
+  const oy = 0;
+
+  const plateColor = cssVar('--plate-fill') || '#fafafa';
+  const text = cssVar('--text') || '#1a1a1a';
+  const muted = cssVar('--muted') || '#6b7280';
+  const orange = cssVar('--orange') || '#ea580c';
+  const team1Color = cssVar('--team1') || '#ef4444';
+  const team2Color = cssVar('--team2') || '#3b82f6';
+
+  // Y positions in canvas
+  let player1Top, opponentTop, tubeTop;
+  if (dualView) {
+    opponentTop = oy;
+    tubeTop = oy + PLATE_H * plateScale;
+    player1Top = tubeTop + TUBE * plateScale;
+  } else {
+    player1Top = oy;
+  }
+
+  // TEAM 1's plate
+  ctx.fillStyle = plateColor;
+  ctx.strokeStyle = text;
+  ctx.lineWidth = 1.5;
+  ctx.fillRect(ox, player1Top, PLATE_W * plateScale, PLATE_H * plateScale);
+  ctx.strokeRect(ox, player1Top, PLATE_W * plateScale, PLATE_H * plateScale);
+
+  // TEAM 1's sjoelsysteem (orange box) at BOTTOM of their plate
+  const team1SysY = player1Top + (PLATE_H - SYSTEM_H) * plateScale;
+  ctx.strokeStyle = orange;
+  ctx.lineWidth = 2;
+  ctx.fillStyle = 'rgba(234,88,12,0.06)';
+  ctx.fillRect(ox, team1SysY, PLATE_W * plateScale, SYSTEM_H * plateScale);
+  ctx.strokeRect(ox, team1SysY, PLATE_W * plateScale, SYSTEM_H * plateScale);
+  ctx.fillStyle = orange;
+  ctx.font = '500 9px -apple-system, system-ui';
+  ctx.textAlign = 'left';
+  ctx.fillText(dualView ? GROUP_DISPLAY_NAMES[activeGroup] + ' — sjoelsysteem' : 'Sjoelsysteem (werpkant)', ox + 4, team1SysY + SYSTEM_H * plateScale - 6);
+
+  if (dualView) {
+    // TEAM 2's plate (above) — no orange system box, just the bare plate
+    ctx.fillStyle = plateColor;
+    ctx.strokeStyle = text;
+    ctx.lineWidth = 1.5;
+    ctx.fillRect(ox, opponentTop, PLATE_W * plateScale, PLATE_H * plateScale);
+    ctx.strokeRect(ox, opponentTop, PLATE_W * plateScale, PLATE_H * plateScale);
+
+    // The tube between the plates (if length > 0). The tube is a SCORING ZONE:
+    // it's divided into compartments per gate, matching the gates above (which are at player1Top).
+    if (TUBE > 0) {
+      const tubeH = TUBE * plateScale;
+      const accent = cssVar('--accent') || '#3b82f6';
+      // Get gate positions
+      const { numGates: nG, gateW: gW, gateGap: gG } = settings;
+      const center = PLATE_W / 2;
+      const { centers: gCenters, start: gStart } = gateCenters(nG, gW, gG, center);
+
+      // Subtle base background to suggest a channel
+      ctx.fillStyle = 'rgba(16,185,129,0.04)';
+      ctx.fillRect(ox, tubeTop, PLATE_W * plateScale, tubeH);
+
+      // Per-gate scoring compartments: each compartment sits below one gate
+      const gScores = gateScores(nG);
+      for (let i = 0; i < nG; i++) {
+        const cellLeft = ox + (gStart + i * (gW + gG)) * plateScale;
+        const cellW2 = gW * plateScale;
+        // Compartment fill — green tint to indicate scoring zone
+        ctx.fillStyle = 'rgba(16,185,129,0.10)';
+        ctx.fillRect(cellLeft, tubeTop, cellW2, tubeH);
+        // Compartment outline
+        ctx.strokeStyle = 'rgba(16,185,129,0.5)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(cellLeft, tubeTop, cellW2, tubeH);
+        // Score label in the middle of the compartment (if tall enough)
+        if (tubeH > 18) {
+          ctx.fillStyle = 'rgba(16,185,129,0.55)';
+          ctx.font = '600 11px -apple-system, system-ui';
+          ctx.textAlign = 'center';
+          ctx.fillText(gScores[i], cellLeft + cellW2/2, tubeTop + tubeH/2 + 4);
+        }
+      }
+
+      // Outer tube boundary (top and bottom walls)
+      ctx.strokeStyle = text;
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      // Top edge of tube (= TEAM 2's gate boundary, top)
+      ctx.moveTo(ox, tubeTop);
+      ctx.lineTo(ox + PLATE_W * plateScale, tubeTop);
+      // Bottom edge of tube (= TEAM 1's gate boundary, bottom)
+      ctx.moveTo(ox, tubeTop + tubeH);
+      ctx.lineTo(ox + PLATE_W * plateScale, tubeTop + tubeH);
+      // Side walls (left and right of the tube)
+      ctx.moveTo(ox, tubeTop);
+      ctx.lineTo(ox, tubeTop + tubeH);
+      ctx.moveTo(ox + PLATE_W * plateScale, tubeTop);
+      ctx.lineTo(ox + PLATE_W * plateScale, tubeTop + tubeH);
+      ctx.stroke();
+
+      // Tube length annotation outside the tube
+      ctx.fillStyle = muted;
+      ctx.font = '500 9px -apple-system, system-ui';
+      ctx.textAlign = 'left';
+      ctx.fillText('buis ' + TUBE + ' mm', ox + 4, tubeTop - 4);
+    }
+  }
+
+  // Gate row: at TOP of player 1's plate (was bottom before flip).
+  // 2D treatment: thin separator line, no thick walls.
+  const { numGates: n, gateW: W, gateGap: gap } = settings;
+  const center = PLATE_W / 2;
+  const { centers, start, end } = gateCenters(n, W, gap, center);
+  const scores = gateScores(n);
+  const gateBaseY = player1Top;
+
+  // Thin separator line at gate boundary (since walls are 2D / negligible)
+  ctx.strokeStyle = text;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(ox, gateBaseY);
+  ctx.lineTo(ox + PLATE_W * plateScale, gateBaseY);
+  ctx.stroke();
+
+  // Tiny markers at gate boundaries (just visual reference points)
+  ctx.strokeStyle = text;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  // Outer edges of gate row
+  if (start > 0) {
+    ctx.moveTo(ox + start * plateScale, gateBaseY - 3);
+    ctx.lineTo(ox + start * plateScale, gateBaseY + 3);
+  }
+  if (end < PLATE_W) {
+    ctx.moveTo(ox + end * plateScale, gateBaseY - 3);
+    ctx.lineTo(ox + end * plateScale, gateBaseY + 3);
+  }
+  // Between each gate pair
+  for (let i = 0; i < n - 1; i++) {
+    const wallLeft = start + (i+1) * W + i * gap;
+    const wallRight = wallLeft + gap;
+    const xMid = (wallLeft + wallRight) / 2;
+    ctx.moveTo(ox + xMid * plateScale, gateBaseY - 3);
+    ctx.lineTo(ox + xMid * plateScale, gateBaseY + 3);
+  }
+  ctx.stroke();
+
+  // Score labels BELOW the gate row (in team 1's plate)
+  ctx.fillStyle = text;
+  ctx.font = '600 11px -apple-system, system-ui';
+  ctx.textAlign = 'center';
+  centers.forEach((c, i) => {
+    const px = ox + c * plateScale;
+    const py = gateBaseY + 14;
+    ctx.fillText(scores[i], px, py);
+  });
+
+  // Team labels (dual view only) — use project names. The active group is "TEAM 1" (our plate, below)
+  // and the other group is "TEAM 2" (opponent, above).
+  if (dualView) {
+    const ourName = GROUP_DISPLAY_NAMES[activeGroup];
+    const theirName = GROUP_DISPLAY_NAMES[activeGroup === 'A' ? 'B' : 'A'];
+    ctx.font = '600 10px -apple-system, system-ui';
+    ctx.textAlign = 'right';
+    ctx.fillStyle = team2Color;
+    ctx.fillText(theirName, ox + PLATE_W * plateScale - 6, opponentTop + 14);
+    ctx.fillStyle = team1Color;
+    ctx.fillText(ourName, ox + PLATE_W * plateScale - 6, team1SysY - 6);
+  }
+
+  // HEATMAP
+  if (landingMode === 'heatmap' || landingMode === 'both') {
+    drawHeatmap(ctx, points, ox, player1Top, opponentTop, plateScale);
+  }
+
+  // SCATTER — disks coloured per run, with three categories:
+  //   IN_TUBE: in the scoring tube (between plates) → ★ marker, FILLED with run color
+  //   ON_TEAM1: before gates (Y >= 0), did not pass → faint dot in run color (no point)
+  //   OVERSHOT: passed through tube into opponent's plate (or off-plate in single mode) → hollow ring (no point)
+  // When tubeLength = 0, any disk with Y < 0 is considered "in scoring zone" (classic mode)
+  if (landingMode === 'scatter' || landingMode === 'both') {
+    points.forEach(p => {
+      let px = ox + p.x * plateScale;
+      let py;
+      let category;
+
+      if (p.y >= 0) {
+        // On TEAM 1's plate (before gates) → no point
+        py = player1Top + p.y * plateScale;
+        category = 'ON_TEAM1';
+      } else {
+        const overshoot = -p.y;
+        if (TUBE > 0) {
+          // Tube physically present
+          if (overshoot <= TUBE) {
+            // Inside scoring tube → SCORES
+            // Y position: between tubeTop and tubeTop+tubeH, mapping overshoot 0..TUBE to bottom..top of tube
+            // overshoot 0 = at gate line = bottom of tube
+            // overshoot TUBE = at top of tube
+            py = tubeTop + (TUBE - overshoot) * plateScale;
+            category = 'IN_TUBE';
+          } else if (dualView) {
+            // Past the tube, landed on TEAM 2's plate
+            if (overshoot > TUBE + PLATE_H) return; // way too far
+            const mirroredX = PLATE_W - p.x;
+            px = ox + mirroredX * plateScale;
+            py = tubeTop - (overshoot - TUBE) * plateScale;
+            category = 'OVERSHOT';
+          } else {
+            return; // single view, past tube — don't draw
+          }
+        } else {
+          // No tube: classic mode. Y<0 means scored.
+          if (dualView) {
+            if (overshoot > PLATE_H) return;
+            const mirroredX = PLATE_W - p.x;
+            px = ox + mirroredX * plateScale;
+            py = player1Top - overshoot * plateScale;
+            category = 'IN_TUBE'; // counts as score in classic mode
+          } else {
+            // Single view: draw slightly above the gate row if it fits
+            if (overshoot > 40) return;
+            py = player1Top - overshoot * plateScale;
+            category = 'IN_TUBE';
+          }
+        }
+      }
+
+      // Clamp X within plate bounds
+      if (px < ox - 6 || px > ox + PLATE_W * plateScale + 6) return;
+
+      const baseColor = landingMode === 'both' ? 'rgba(120,120,120,0.7)' : runColor(p.runIdx || 0);
+      const radius = landingMode === 'both' ? 1.8 : 2.6;
+
+      if (category === 'IN_TUBE') {
+        // Scoring disk: filled circle with subtle green glow ring
+        ctx.fillStyle = baseColor;
+        ctx.beginPath();
+        ctx.arc(px, py, radius, 0, 2*Math.PI);
+        ctx.fill();
+        // Green halo to mark "this counts"
+        if (landingMode !== 'both' && TUBE > 0) {
+          ctx.strokeStyle = 'rgba(16,185,129,0.8)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.arc(px, py, radius + 1.5, 0, 2*Math.PI);
+          ctx.stroke();
+        }
+      } else if (category === 'OVERSHOT') {
+        // Doorgeschoten naar tegenstander: hollow ring
+        ctx.globalAlpha = 0.45;
+        ctx.fillStyle = baseColor;
+        ctx.beginPath();
+        ctx.arc(px, py, radius, 0, 2*Math.PI);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = baseColor;
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.arc(px, py, radius, 0, 2*Math.PI);
+        ctx.stroke();
+      } else {
+        // ON_TEAM1: voor de poortjes blijven liggen, geen punt
+        ctx.fillStyle = baseColor;
+        ctx.globalAlpha = 0.75;
+        ctx.beginPath();
+        ctx.arc(px, py, radius, 0, 2*Math.PI);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+    });
+  }
+}
+
+
+function drawHeatmap(ctx, points, ox, player1Top, opponentTop, scale) {
+  // Flipped layout (180° rotated):
+  //   TEAM 1 grid: y_in_plate = p.y; r=0 at gate row (top of plate), r=rows-1 at sjoelsysteem (bottom).
+  //   TEAM 2 grid: cy = overshoot, mirrored X. Their plate sits ABOVE team 1.
+  //                Their gate row is at the BOTTOM of their plate (= boundary with team 1).
+  //                So small overshoot → near their gate → bottom of TEAM 2 plate.
+  //                We paint TEAM 2 grid FLIPPED: row 0 of grid goes to bottom of plate.
+  const cols = 24, rows = 72;
+  const cellW = PLATE_W / cols;
+  const cellH = PLATE_H / rows;
+  const bw = 60;
+
+  function makeGrid() { return Array.from({length: rows}, () => new Array(cols).fill(0)); }
+
+  const gridA = makeGrid();
+  const gridB = dualView ? makeGrid() : null;
+
+  points.forEach(p => {
+    if (p.y >= 0) {
+      // TEAM 1's plate: cy = p.y (0 = gate row at top, PLATE_H = system at bottom)
+      const cx = p.x, cy = p.y;
+      if (cy > PLATE_H) return;
+      for (let r = 0; r < rows; r++) {
+        const yMid = (r + 0.5) * cellH;
+        const dy = yMid - cy;
+        if (Math.abs(dy) > bw * 3) continue;
+        for (let c = 0; c < cols; c++) {
+          const xMid = (c + 0.5) * cellW;
+          const dx = xMid - cx;
+          if (Math.abs(dx) > bw * 3) continue;
+          gridA[r][c] += Math.exp(-0.5 * (dx*dx + dy*dy) / (bw*bw));
+        }
+      }
+    } else if (dualView) {
+      // TEAM 2's plate: cy = overshoot - TUBE (since tube is between plates)
+      const overshoot = -p.y;
+      if (overshoot < tubeLength) return; // inside tube, not landed
+      if (overshoot - tubeLength > PLATE_H) return;
+      const cx = PLATE_W - p.x;
+      const cy = overshoot - tubeLength;
+      for (let r = 0; r < rows; r++) {
+        const yMid = (r + 0.5) * cellH;
+        const dy = yMid - cy;
+        if (Math.abs(dy) > bw * 3) continue;
+        for (let c = 0; c < cols; c++) {
+          const xMid = (c + 0.5) * cellW;
+          const dx = xMid - cx;
+          if (Math.abs(dx) > bw * 3) continue;
+          gridB[r][c] += Math.exp(-0.5 * (dx*dx + dy*dy) / (bw*bw));
+        }
+      }
+    }
+  });
+
+  let maxV = 0;
+  for (let r=0; r<rows; r++) for (let c=0; c<cols; c++) {
+    if (gridA[r][c] > maxV) maxV = gridA[r][c];
+    if (gridB && gridB[r][c] > maxV) maxV = gridB[r][c];
+  }
+  if (maxV === 0) return;
+
+  function paintGrid(grid, originY, flipped) {
+    for (let r=0; r<rows; r++) {
+      for (let c=0; c<cols; c++) {
+        const v = grid[r][c] / maxV;
+        if (v < 0.02) continue;
+        ctx.fillStyle = heatColor(v);
+        const x = ox + c * cellW * scale;
+        // For TEAM 2 (flipped): row 0 (small cy = near gate) at BOTTOM of their plate
+        const rowYInPlate = flipped ? (PLATE_H - (r + 1) * cellH) : (r * cellH);
+        const y = originY + rowYInPlate * scale;
+        ctx.fillRect(x, y, cellW * scale + 0.5, cellH * scale + 0.5);
+      }
+    }
+  }
+
+  paintGrid(gridA, player1Top, false);
+  if (gridB) paintGrid(gridB, opponentTop, true);
+}
+
+function heatColor(t) {
+  if (t < 0.5) {
+    const k = t / 0.5;
+    const a = 0.10 + 0.35 * k;
+    const r = Math.round(59 + (234-59)*k);
+    const g = Math.round(130 + (88-130)*k);
+    const b = Math.round(246 + (12-246)*k);
+    return 'rgba('+r+','+g+','+b+','+a+')';
+  } else {
+    const k = (t - 0.5) / 0.5;
+    const a = 0.45 + 0.45 * k;
+    const r = Math.round(234 + (220-234)*k);
+    const g = Math.round(88 + (38-88)*k);
+    const b = Math.round(12 + (38-12)*k);
+    return 'rgba('+r+','+g+','+b+','+a+')';
+  }
+}
+
+function renderZoneTable(points) {
+  const total = points.length;
+  const before = points.filter(p => p.y >= 0).length;
+  const xs = points.map(p=>p.x), ys = points.map(p=>p.y);
+  const muX = mean(xs), muY = mean(ys);
+  const sX = std(xs), sY = std(ys);
+
+  // Three categories (same as scatter):
+  //   on Team 1 = Y >= 0 (didn't pass gates)
+  //   in tube / scoring = Y < 0 AND (no tube OR overshoot <= tubeLength)
+  //   on Team 2 = Y < 0 AND overshoot > tubeLength (only when tubeLength > 0)
+  let inScoreZone, onTeam2;
+  if (tubeLength > 0) {
+    inScoreZone = points.filter(p => p.y < 0 && -p.y <= tubeLength).length;
+    onTeam2 = points.filter(p => -p.y > tubeLength).length;
+  } else {
+    // No tube: everything past gates scores; "on Team 2 veld" not applicable (would need a tube)
+    inScoreZone = points.filter(p => p.y < 0).length;
+    onTeam2 = 0;
+  }
+
+  const pct = n => (n/total*100).toFixed(0);
+
+  const ourLabel = 'Op ' + GROUP_DISPLAY_NAMES[activeGroup] + ' veld';
+  const theirLabel = 'Op ' + GROUP_DISPLAY_NAMES[activeGroup === 'A' ? 'B' : 'A'] + ' veld';
+
+  let html =
+    '<tr><td class="label">Aantal schijven</td><td class="val">'+total+'</td></tr>' +
+    '<tr><td class="label" style="color:var(--danger);">✗ '+ourLabel+'</td><td class="val" style="color:var(--danger);font-weight:600;">'+before+' · '+pct(before)+'%</td></tr>' +
+    '<tr><td class="label" style="color:#10b981;">✓ ' + (tubeLength > 0 ? 'In buis (scoort!)' : 'Voorbij poortjes (scoort!)') + '</td><td class="val" style="color:#10b981;font-weight:600;">'+inScoreZone+' · '+pct(inScoreZone)+'%</td></tr>';
+
+  if (tubeLength > 0) {
+    html += '<tr><td class="label" style="color:var(--danger);">✗ '+theirLabel+'</td><td class="val" style="color:var(--danger);font-weight:600;">'+onTeam2+' · '+pct(onTeam2)+'%</td></tr>';
+  } else {
+    html += '<tr><td class="label" style="color:var(--muted);font-style:italic;">'+theirLabel+'</td><td class="val" style="color:var(--muted);font-size:11px;">stel een buis in &gt; 0 mm</td></tr>';
+  }
+
+  html +=
+    '<tr><td class="label">Gemiddeld landingspunt</td><td class="val">('+muX.toFixed(0)+', '+muY.toFixed(0)+')</td></tr>' +
+    '<tr><td class="label">σ X / σ Y</td><td class="val">'+sX.toFixed(0)+' / '+sY.toFixed(0)+' mm</td></tr>';
+
+  document.getElementById('zoneTable').innerHTML = html;
+}
+
+const themeBtn = document.getElementById('themeBtn');
+const themeLabel = document.getElementById('themeLabel');
+function setTheme(theme) {
+  document.body.dataset.theme = theme;
+  localStorage.setItem('sjoel-theme', theme);
+  themeLabel.textContent = theme === 'dark' ? 'Licht' : 'Donker';
+  renderChart();
+  renderCompareTable();
+  if (document.getElementById('panel-landing').classList.contains('active')) renderLanding();
+}
+themeBtn.addEventListener('click', () => {
+  setTheme(document.body.dataset.theme === 'dark' ? 'light' : 'dark');
+});
+const savedTheme = localStorage.getItem('sjoel-theme');
+if (savedTheme) document.body.dataset.theme = savedTheme;
+themeLabel.textContent = document.body.dataset.theme === 'dark' ? 'Licht' : 'Donker';
+
+document.getElementById('measRef').addEventListener('change', e => {
+  measRef = e.target.value;
+  renderChart();
+  renderResetValues();
+  if (document.getElementById('panel-landing').classList.contains('active')) renderLanding();
+});
+
+document.getElementById('resetAllBtn').addEventListener('click', () => {
+  Object.keys(defaults).forEach(k => settings[k] = defaults[k]);
+  measRef = 'tl';
+  document.getElementById('measRef').value = 'tl';
+  dualView = false;
+  document.getElementById('dualView').checked = false;
+  triggerRender();
+});
+
+document.getElementById('dualView').addEventListener('change', e => {
+  dualView = e.target.checked;
+  renderLanding();
+});
+
+document.getElementById('tubeLength').addEventListener('input', e => {
+  let v = parseInt(e.target.value, 10);
+  if (isNaN(v) || v < 0) v = 0;
+  if (v > 500) v = 500;
+  tubeLength = v;
+  renderLanding();
+});
+
+document.getElementById('targetProb').addEventListener('input', () => {
+  // Re-run with current data; renderGate triggers renderTargetProb at the end
+  renderGate();
+});
+
+function isEditorOpen() {
+  const box = document.getElementById('runEditorBox');
+  return box && box.style.display !== 'none';
+}
+
+function editorHasContent() {
+  if (!isEditorOpen()) return false;
+  if (editorRows.some(r => (r.x && r.x !== '') || (r.y && r.y !== ''))) return true;
+  const name = document.getElementById('runNameInput');
+  const notes = document.getElementById('runNotesInput');
+  if (name && name.value.trim()) return true;
+  if (notes && notes.value.trim()) return true;
+  return false;
+}
+
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', (e) => {
+    // Block tab switch if editor is open with unsaved content
+    if (isEditorOpen() && editorHasContent()) {
+      const targetTab = t.dataset.tab;
+      // If they're already on Runs and clicking Runs again, do nothing special
+      if (targetTab !== 'runs') {
+        e.preventDefault();
+        showToast('⚠ Bewaar of annuleer eerst je openstaande run-bewerking');
+        // Make the editor flash to draw attention
+        const editorBox = document.getElementById('runEditorBox');
+        if (editorBox) {
+          editorBox.classList.add('editor-flash');
+          setTimeout(() => editorBox.classList.remove('editor-flash'), 600);
+          editorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
+      }
+    }
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('panel-' + t.dataset.tab).classList.add('active');
+    setTimeout(() => {
+      if (t.dataset.tab === 'dashboard') { if (chart) chart.resize(); renderGate(); }
+      if (t.dataset.tab === 'landing') { renderLanding(); }
+      if (t.dataset.tab === 'settings') { drawDimDiagram(); renderResetValues(); }
+      if (t.dataset.tab === 'runs') { renderRunsList(); renderCompareTable(); }
+    }, 60);
+  });
+});
+
+document.querySelectorAll('#axisCtl .btn').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#axisCtl .btn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    currentAxis = b.dataset.axis;
+    // Show/hide gate legend entry
+    document.querySelectorAll('.legend-gate-entry').forEach(el => {
+      el.style.display = currentAxis === 'x' ? '' : 'none';
+    });
+    renderChart();
+  });
+});
+document.querySelectorAll('#modeCtl button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#modeCtl button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    landingMode = b.dataset.mode;
+    renderLanding();
+  });
+});
+
+window.addEventListener('resize', () => {
+  renderGate();
+  if (document.getElementById('panel-landing').classList.contains('active')) renderLanding();
+});
+
+/* === RUNS MANAGEMENT === */
+let editingRunIndex = null; // null = new run, else index
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function renderRunsList() {
+  const container = document.getElementById('runsList');
+  if (!rawRuns.length) {
+    container.innerHTML = '<p class="desc" style="font-style:italic;">Nog geen runs. Voeg er een toe.</p>';
+    return;
+  }
+  const totalSelected = Array.from(selectedRuns).reduce((s, i) => s + (rawRuns[i] ? rawRuns[i].x.length : 0), 0);
+  const header = '<div class="runs-header">' +
+    '<span><b>' + selectedRuns.size + '</b> van ' + rawRuns.length + ' runs geselecteerd · <b>' + totalSelected + '</b> metingen totaal</span>' +
+    '<div class="runs-bulk">' +
+      '<button class="btn btn-xs" id="selectAllRuns">Alles selecteren</button>' +
+      '<button class="btn btn-xs" id="selectNoneRuns">Niets</button>' +
+    '</div>' +
+  '</div>';
+
+  const items = rawRuns.map((r, i) => {
+    const selected = selectedRuns.has(i);
+    const notes = r.notes ? '<div class="run-notes">' + escapeHtml(r.notes) + '</div>' : '';
+    return '<label class="run-item' + (selected ? ' active' : '') + '">' +
+      '<div class="run-row-main">' +
+        '<input type="checkbox" class="run-check" data-idx="' + i + '"' + (selected ? ' checked' : '') + ' />' +
+        '<div class="run-name">' + escapeHtml(r.label) +
+          ' <small>n=' + r.x.length + '</small>' +
+        '</div>' +
+        '<div class="run-actions">' +
+          '<button data-act="edit" data-idx="' + i + '">Bewerken</button>' +
+          (rawRuns.length > 1 ? '<button class="danger" data-act="delete" data-idx="' + i + '">Verwijder</button>' : '') +
+        '</div>' +
+      '</div>' +
+      notes +
+    '</label>';
+  }).join('');
+
+  container.innerHTML = header + items;
+
+  container.querySelectorAll('.run-check').forEach(chk => {
+    chk.addEventListener('change', (e) => {
+      const idx = +chk.dataset.idx;
+      if (chk.checked) selectedRuns.add(idx);
+      else selectedRuns.delete(idx);
+      if (selectedRuns.size === 0) {
+        // Don't allow empty selection — re-add the one just unchecked
+        selectedRuns.add(idx);
+        chk.checked = true;
+        showToast('Minstens één run moet geselecteerd zijn');
+        return;
+      }
+      onSelectionChange();
+    });
+  });
+
+  container.querySelectorAll('button[data-act]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const idx = +btn.dataset.idx;
+      const act = btn.dataset.act;
+      if (act === 'edit') {
+        openRunEditor(idx);
+      } else if (act === 'delete') {
+        if (!confirm('Run "' + rawRuns[idx].label + '" verwijderen?')) return;
+        rawRuns.splice(idx, 1);
+        // Rebuild selection: shift indices and drop the deleted one
+        const newSel = new Set();
+        selectedRuns.forEach(s => {
+          if (s < idx) newSel.add(s);
+          else if (s > idx) newSel.add(s - 1);
+        });
+        selectedRuns = newSel;
+        if (selectedRuns.size === 0 && rawRuns.length) selectedRuns.add(0);
+        renderRunsList();
+        onSelectionChange();
+        showToast('Run verwijderd');
+      }
+    });
+  });
+
+  // Prevent label clicks from bubbling to row when clicking edit/delete buttons
+  container.querySelectorAll('.run-item .run-actions').forEach(el => {
+    el.addEventListener('click', (e) => e.preventDefault());
+  });
+
+  const allBtn = document.getElementById('selectAllRuns');
+  const noneBtn = document.getElementById('selectNoneRuns');
+  if (allBtn) allBtn.addEventListener('click', () => {
+    selectedRuns = new Set(rawRuns.map((_, i) => i));
+    renderRunsList();
+    onSelectionChange();
+  });
+  if (noneBtn) noneBtn.addEventListener('click', () => {
+    // Keep at least one — pick the first
+    selectedRuns = new Set([0]);
+    renderRunsList();
+    onSelectionChange();
+  });
+}
+
+function onSelectionChange() {
+  renderChart();
+  renderCompareTable();
+  if (document.getElementById('panel-landing').classList.contains('active')) renderLanding();
+}
+
+// === COMPARE TABLE ===
+let compareMode = 'all'; // 'all' or 'selected'
+
+function renderCompareTable() {
+  const tbody = document.getElementById('compareTable');
+  if (!tbody) return;
+
+  // Pick which runs to show
+  const indices = compareMode === 'selected'
+    ? Array.from(selectedRuns).sort((a,b)=>a-b)
+    : rawRuns.map((_, i) => i);
+
+  if (!indices.length) {
+    tbody.innerHTML = '<tr><td style="text-align:center;color:var(--muted);padding:20px;">Geen runs om te vergelijken</td></tr>';
+    // Clear gauss chart too
+    renderCompareGauss([]);
+    return;
+  }
+
+  // Compute stats for each run, using current measRef + settings for scoring
+  const off = MEAS_OFFSETS[measRef];
+  const D = settings.diskD;
+  const { numGates: n, gateW: W, gateGap: gap } = settings;
+  const scores = gateScores(n);
+
+  const stats = indices.map(idx => {
+    const r = rawRuns[idx];
+    const xs = r.x.map(v => v + off.dx * D / 2);
+    const ys = r.y.map(v => v + off.dy * D / 2);
+    const muX = mean(xs), sX = std(xs);
+    const muY = mean(ys), sY = std(ys);
+    // Score using nearest gate (consistent with computeLandingProb empirical method)
+    const gateOffset = settings.gateOffset || 0;
+    const center = PLATE_W / 2 + gateOffset;
+    const { centers } = gateCenters(n, W, gap, center);
+    let scored = 0, totalScore = 0;
+    for (let k = 0; k < ys.length; k++) {
+      if (ys[k] >= 0) continue; // not through gates
+      const overshoot = -ys[k];
+      if (tubeLength > 0 && overshoot > tubeLength) continue; // flew past the tube
+      // Find nearest gate
+      let bestIdx = 0, bestDist = Infinity;
+      for (let g = 0; g < centers.length; g++) {
+        const d = Math.abs(xs[k] - centers[g]);
+        if (d < bestDist) { bestDist = d; bestIdx = g; }
+      }
+      scored++;
+      totalScore += scores[bestIdx];
+    }
+    return {
+      idx, label: r.label, n: xs.length,
+      muX, sX, muY, sY,
+      scored, missed: xs.length - scored, totalScore,
+      scoreRate: xs.length ? scored / xs.length : 0,
+      ptsPerThrow: xs.length ? totalScore / xs.length : 0
+    };
+  });
+
+  // Determine best per column
+  const best = {
+    sX: Math.min(...stats.map(s => s.sX)),
+    sY: Math.min(...stats.map(s => s.sY)),
+    scored: Math.max(...stats.map(s => s.scored)),
+    scoreRate: Math.max(...stats.map(s => s.scoreRate)),
+    totalScore: Math.max(...stats.map(s => s.totalScore)),
+    ptsPerThrow: Math.max(...stats.map(s => s.ptsPerThrow))
+  };
+
+  let html = '<thead><tr>' +
+    '<th data-tip="Naam van de meetreeks. Een blauwe stip betekent dat deze run actief is op het Dashboard.">Run</th>' +
+    '<th data-tip="Aantal metingen in deze run">n</th>' +
+    '<th data-tip="Gemiddelde X-positie van alle worpen (in mm vanaf de linkerrand). Ideaal ligt dit op het midden van de poortenrij.">μ X</th>' +
+    '<th data-tip="Standaardafwijking in X-richting. Hoe lager, hoe consistenter de worp links-rechts.">σ X</th>' +
+    '<th class="group-sep" data-tip="Gemiddelde Y-positie. Negatieve waarden betekenen dat schijven gemiddeld door de poortjes zijn gegaan.">μ Y</th>' +
+    '<th data-tip="Standaardafwijking in Y-richting. Een grote σ Y betekent dat de afgelegde afstand sterk varieert.">σ Y</th>' +
+    '<th class="group-sep" data-tip="Aantal schijven die voorbij de poortjeslijn zijn (Y < 0). Elke zo\'n schijf wordt toegekend aan de dichtstbijzijnde poort.">Door poort</th>' +
+    '<th data-tip="Percentage geslaagde worpen ten opzichte van het totaal aantal metingen.">Slaagkans</th>' +
+    '<th class="group-sep" data-tip="Totale score volgens de PES 2026 puntentelling (poorten 2-5-3-1-4) op basis van de huidige poortconfiguratie.">Score</th>' +
+    '<th data-tip="Gemiddeld aantal punten per worp. Dit is een goede indicator van de algemene prestatie.">Pt / worp</th>' +
+  '</tr></thead><tbody>';
+
+  // Find row with best score for soft-highlighting
+  const bestScoreIdx = stats.findIndex(s => s.totalScore === best.totalScore);
+
+  stats.forEach((s, rowIdx) => {
+    const isSel = selectedRuns.has(s.idx);
+    const isBest = rowIdx === bestScoreIdx && stats.length > 1;
+    html += '<tr class="' + (isBest ? 'row-best' : '') + '">' +
+      '<td><span class="run-dot ' + (isSel ? '' : 'hidden') + '"></span>' + escapeHtml(s.label) + '</td>' +
+      '<td class="col-muted">' + s.n + '</td>' +
+      '<td>' + s.muX.toFixed(0) + ' <span class="col-muted">mm</span></td>' +
+      '<td class="' + (s.sX === best.sX && stats.length > 1 ? 'best' : '') + '">' + s.sX.toFixed(1) + '</td>' +
+      '<td class="group-sep">' + s.muY.toFixed(0) + ' <span class="col-muted">mm</span></td>' +
+      '<td class="' + (s.sY === best.sY && stats.length > 1 ? 'best' : '') + '">' + s.sY.toFixed(1) + '</td>' +
+      '<td class="group-sep ' + (s.scored === best.scored && stats.length > 1 ? 'best' : '') + '">' + s.scored + ' <span class="col-muted">/ ' + s.n + '</span></td>' +
+      '<td class="' + (s.scoreRate === best.scoreRate && stats.length > 1 ? 'best' : '') + '">' + (s.scoreRate * 100).toFixed(0) + '%</td>' +
+      '<td class="group-sep col-score ' + (s.totalScore === best.totalScore && stats.length > 1 ? 'best' : '') + '">' + s.totalScore + '</td>' +
+      '<td class="' + (s.ptsPerThrow === best.ptsPerThrow && stats.length > 1 ? 'best' : '') + '">' + s.ptsPerThrow.toFixed(2) + '</td>' +
+    '</tr>';
+  });
+  html += '</tbody>';
+  tbody.innerHTML = html;
+
+  // Update the chart too
+  renderCompareGauss(stats);
+}
+
+// Stable color palette + HSL fallback for many runs
+const RUN_PALETTE = [
+  '#3b82f6', // blue
+  '#10b981', // green
+  '#f59e0b', // amber
+  '#ef4444', // red
+  '#8b5cf6', // violet
+  '#ec4899', // pink
+  '#06b6d4', // cyan
+  '#84cc16', // lime
+  '#f97316', // orange
+  '#14b8a6'  // teal
+];
+function runColor(idx) {
+  if (idx < RUN_PALETTE.length) return RUN_PALETTE[idx];
+  // Golden-angle HSL for visually distinct extras
+  const h = (idx * 137.508) % 360;
+  return 'hsl(' + h.toFixed(1) + ', 65%, 55%)';
+}
+
+let compareGaussAxis = 'x'; // 'x' or 'y'
+let compareGaussChart = null;
+
+function renderCompareGauss(stats) {
+  const canvas = document.getElementById('compareGaussCanvas');
+  if (!canvas || typeof Chart === 'undefined') return;
+
+  const axis = compareGaussAxis;
+
+  // Re-compute corrected per-run data because stats only has μ/σ summaries
+  const off = MEAS_OFFSETS[measRef];
+  const D = settings.diskD;
+  const runsData = stats.map(s => {
+    const r = rawRuns[s.idx];
+    const vals = (axis === 'x' ? r.x : r.y).map(v =>
+      v + (axis === 'x' ? off.dx : off.dy) * D / 2
+    );
+    return { idx: s.idx, label: s.label, mu: mean(vals), sigma: std(vals) };
+  });
+
+  if (!runsData.length) {
+    if (compareGaussChart) { compareGaussChart.destroy(); compareGaussChart = null; }
+    document.getElementById('compareGaussLegend').innerHTML = '';
+    return;
+  }
+
+  // Compute common x-range that covers all runs ±3σ
+  let lo = Infinity, hi = -Infinity;
+  runsData.forEach(rd => {
+    const a = rd.mu - 3.5 * rd.sigma;
+    const b = rd.mu + 3.5 * rd.sigma;
+    if (a < lo) lo = a;
+    if (b > hi) hi = b;
+  });
+  if (!isFinite(lo) || !isFinite(hi) || lo === hi) {
+    if (compareGaussChart) { compareGaussChart.destroy(); compareGaussChart = null; }
+    return;
+  }
+  const pad = (hi - lo) * 0.05;
+  lo -= pad; hi += pad;
+
+  const steps = 220;
+  const step = (hi - lo) / steps;
+  const xs = Array.from({ length: steps + 1 }, (_, i) => lo + i * step);
+  const labels = xs.map(v => v.toFixed(1));
+
+  const datasets = runsData.map(rd => {
+    const color = runColor(rd.idx);
+    return {
+      label: rd.label,
+      data: xs.map(x => gauss(x, rd.mu, rd.sigma)),
+      borderColor: color,
+      backgroundColor: color + '20', // ~12% alpha
+      borderWidth: 2,
+      pointRadius: 0,
+      tension: 0.35,
+      fill: false
+    };
+  });
+
+  const mutedColor = cssVar('--muted') || '#6b7280';
+  const lineColor = cssVar('--line') || '#e5e7eb';
+  const cardColor = cssVar('--card') || '#fff';
+  const textColor = cssVar('--text') || '#1a1a1a';
+
+  if (compareGaussChart) compareGaussChart.destroy();
+  compareGaussChart = new Chart(canvas, {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: cardColor, borderColor: lineColor, borderWidth: 1,
+          titleColor: textColor, bodyColor: mutedColor, padding: 8,
+          callbacks: {
+            title: items => axis.toUpperCase() + ' = ' + parseFloat(items[0].label).toFixed(1) + ' mm',
+            label: item => item.dataset.label + ': ' + (item.parsed.y * 100).toFixed(4) + '% / mm'
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { maxTicksLimit: 8, callback: (v, i) => parseFloat(labels[i]).toFixed(0), color: mutedColor, font: { size: 11 } },
+          title: { display: true, text: axis.toUpperCase() + '-positie (mm)', color: mutedColor, font: { size: 11 } },
+          grid: { color: 'rgba(128,128,128,0.08)' }, border: { color: lineColor }
+        },
+        y: {
+          ticks: { callback: v => (v * 100).toFixed(3) + '%', maxTicksLimit: 6, color: mutedColor, font: { size: 11 } },
+          title: { display: true, text: 'Kanswaarde (/mm)', color: mutedColor, font: { size: 11 } },
+          grid: { color: 'rgba(128,128,128,0.08)' }, border: { color: lineColor }
+        }
+      }
+    }
+  });
+
+  // Render legend chips
+  const legendBox = document.getElementById('compareGaussLegend');
+  legendBox.innerHTML = runsData.map(rd =>
+    '<span class="chip">' +
+      '<span class="chip-swatch" style="background:' + runColor(rd.idx) + ';"></span>' +
+      escapeHtml(rd.label) +
+      ' <span class="chip-stats">μ=' + rd.mu.toFixed(0) + ' σ=' + rd.sigma.toFixed(1) + '</span>' +
+    '</span>'
+  ).join('');
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// === EDITOR STATE ===
+// rows is an array of { x, y } where x/y are strings (so empty allowed)
+let editorRows = [];
+
+// === EDITOR DRAFT AUTO-SAVE ===
+// While editing, the rows + name + notes are saved to localStorage on every keystroke.
+// On page load, if a draft exists, ask the user if they want to restore it.
+const EDITOR_DRAFT_KEY = 'sjoel-editor-draft';
+
+function saveEditorDraft() {
+  // Only save if the editor is actually open
+  const editorBox = document.getElementById('runEditorBox');
+  if (!editorBox || editorBox.style.display === 'none') return;
+  // Don't save if there's no meaningful data yet
+  const hasData = editorRows.some(r => r.x !== '' || r.y !== '');
+  const nameInput = document.getElementById('runNameInput');
+  const notesInput = document.getElementById('runNotesInput');
+  const name = nameInput ? nameInput.value : '';
+  const notes = notesInput ? notesInput.value : '';
+  if (!hasData && !name && !notes) {
+    clearEditorDraft();
+    return;
+  }
+  try {
+    localStorage.setItem(EDITOR_DRAFT_KEY, JSON.stringify({
+      version: 1,
+      activeGroup: activeGroup,
+      editingRunIndex: editingRunIndex,
+      name: name,
+      notes: notes,
+      rows: editorRows,
+      timestamp: Date.now()
+    }));
+    // Show "Auto-opgeslagen" indicator briefly
+    const indicator = document.getElementById('autosaveIndicator');
+    if (indicator) {
+      indicator.classList.add('visible');
+      clearTimeout(saveEditorDraft._fadeTimer);
+      saveEditorDraft._fadeTimer = setTimeout(() => indicator.classList.remove('visible'), 1500);
+    }
+  } catch(e) { /* ignore */ }
+}
+
+function clearEditorDraft() {
+  try { localStorage.removeItem(EDITOR_DRAFT_KEY); } catch(e) {}
+}
+
+function getEditorDraft() {
+  try {
+    const raw = localStorage.getItem(EDITOR_DRAFT_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (!data || !Array.isArray(data.rows)) return null;
+    return data;
+  } catch(e) { return null; }
+}
+
+function tryRestoreEditorDraft() {
+  const draft = getEditorDraft();
+  if (!draft) return;
+  const hasContent = draft.rows.some(r => (r.x && r.x !== '') || (r.y && r.y !== ''))
+                  || (draft.name && draft.name.trim())
+                  || (draft.notes && draft.notes.trim());
+  if (!hasContent) {
+    clearEditorDraft();
+    return;
+  }
+  // Switch to the correct group if needed
+  if (draft.activeGroup && draft.activeGroup !== activeGroup && groups[draft.activeGroup]) {
+    saveCurrentToGroup();
+    loadFromGroup(draft.activeGroup);
+    persistGroups();
+    refreshGroupUI();
+    rerenderEverythingForGroup();
+  }
+  // Switch to the Runs tab
+  const runsTabBtn = document.querySelector('.tab[data-tab="runs"]');
+  if (runsTabBtn) runsTabBtn.click();
+  // Open editor and restore data — no prompt, just do it
+  setTimeout(() => {
+    openRunEditor(draft.editingRunIndex);
+    editorRows = draft.rows.map(r => ({ x: r.x || '', y: r.y || '' }));
+    document.getElementById('runRowCount').value = editorRows.length;
+    if (draft.name) document.getElementById('runNameInput').value = draft.name;
+    if (draft.notes) document.getElementById('runNotesInput').value = draft.notes;
+    renderEditorTable();
+    const filledRows = draft.rows.filter(r => (r.x && r.x !== '') || (r.y && r.y !== '')).length;
+    const ageMin = Math.round((Date.now() - draft.timestamp) / 60000);
+    const ageStr = ageMin < 1 ? 'zojuist' : (ageMin === 1 ? '1 minuut geleden' : ageMin + ' minuten geleden');
+    showToast('↻ Niet-bewaarde wijzigingen hersteld (' + filledRows + ' rijen, ' + ageStr + ')');
+  }, 100);
+}
+
+function buildEditorRows(n, existing) {
+  editorRows = [];
+  for (let i = 0; i < n; i++) {
+    const e = existing && existing[i];
+    editorRows.push({
+      x: e && typeof e.x === 'number' ? String(e.x) : '',
+      y: e && typeof e.y === 'number' ? String(e.y) : ''
+    });
+  }
+}
+
+function renderEditorTable() {
+  const tbody = document.getElementById('runDataTable');
+  tbody.innerHTML = editorRows.map((r, i) => {
+    return '<tr>' +
+      '<td>' + (i + 1) + '</td>' +
+      '<td><input class="cell" data-row="' + i + '" data-col="x" value="' + escapeHtml(r.x) + '" inputmode="decimal" /></td>' +
+      '<td><input class="cell" data-row="' + i + '" data-col="y" value="' + escapeHtml(r.y) + '" inputmode="decimal" /></td>' +
+      '<td><button class="row-del" data-row="' + i + '" title="Verwijder rij">×</button></td>' +
+    '</tr>';
+  }).join('');
+
+  // Attach handlers
+  tbody.querySelectorAll('input.cell').forEach(inp => {
+    inp.addEventListener('input', onCellInput);
+    inp.addEventListener('paste', onCellPaste);
+    inp.addEventListener('keydown', onCellKey);
+    inp.addEventListener('blur', saveEditorDraftNow);
+  });
+  tbody.querySelectorAll('.row-del').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = +btn.dataset.row;
+      editorRows.splice(idx, 1);
+      if (editorRows.length === 0) editorRows.push({ x: '', y: '' });
+      document.getElementById('runRowCount').value = editorRows.length;
+      renderEditorTable();
+      updateDataStatus();
+      scheduleEditorDraftSave();
+    });
+  });
+  updateDataStatus();
+}
+
+function onCellInput(e) {
+  const row = +e.target.dataset.row;
+  const col = e.target.dataset.col;
+  const val = e.target.value.replace(',', '.');
+  editorRows[row][col] = val;
+  // Validate visually
+  if (val.trim() === '' || !isNaN(parseFloat(val))) {
+    e.target.classList.remove('invalid');
+  } else {
+    e.target.classList.add('invalid');
+  }
+  updateDataStatus();
+  scheduleEditorDraftSave();
+}
+
+// Debounce draft saves so we don't hammer localStorage on every keystroke
+let _draftTimer = null;
+function scheduleEditorDraftSave() {
+  if (_draftTimer) clearTimeout(_draftTimer);
+  _draftTimer = setTimeout(() => saveEditorDraft(), 200);
+}
+// Save immediately (no debounce) — for blur events
+function saveEditorDraftNow() {
+  if (_draftTimer) { clearTimeout(_draftTimer); _draftTimer = null; }
+  saveEditorDraft();
+}
+
+function onCellKey(e) {
+  // Enter or down arrow → move focus to same column next row
+  // Up arrow → previous row
+  // Tab is native
+  const row = +e.target.dataset.row;
+  const col = e.target.dataset.col;
+  let nextRow = null;
+  if (e.key === 'Enter' || e.key === 'ArrowDown') nextRow = row + 1;
+  else if (e.key === 'ArrowUp') nextRow = row - 1;
+  if (nextRow !== null && nextRow >= 0 && nextRow < editorRows.length) {
+    e.preventDefault();
+    const target = document.querySelector('input.cell[data-row="' + nextRow + '"][data-col="' + col + '"]');
+    if (target) { target.focus(); target.select(); }
+  }
+}
+
+function onCellPaste(e) {
+  // Check if pasted content has tab/newline → distribute over multiple cells
+  const text = (e.clipboardData || window.clipboardData).getData('text');
+  if (!text) return;
+  if (!text.includes('\n') && !text.includes('\t')) return; // single value, let default happen
+  e.preventDefault();
+  const startRow = +e.target.dataset.row;
+  const startCol = e.target.dataset.col; // 'x' or 'y'
+  const startColIdx = startCol === 'x' ? 0 : 1;
+
+  // Parse: lines split by newline, cells by tab or other separators
+  const lines = text.split(/\r?\n/).map(l => l).filter((l, i, arr) => l.length || i < arr.length - 1);
+  const grid = lines.map(line => line.split(/\t/));
+
+  // If only one column was pasted, treat as a column of values
+  // Otherwise: rows × 2 cols, where col 0 → x, col 1 → y
+  grid.forEach((cells, r) => {
+    const targetRow = startRow + r;
+    // Auto-grow editorRows if needed
+    while (editorRows.length <= targetRow) editorRows.push({ x: '', y: '' });
+    if (cells.length === 1) {
+      // Single column paste: put into the starting column
+      const val = cells[0].trim().replace(',', '.');
+      if (val !== '' || cells[0] === '') {
+        editorRows[targetRow][startCol] = val;
+      }
+    } else {
+      // Multi-column paste: starting from startColIdx
+      cells.forEach((val, c) => {
+        const colIdx = startColIdx + c;
+        if (colIdx === 0) editorRows[targetRow].x = val.trim().replace(',', '.');
+        else if (colIdx === 1) editorRows[targetRow].y = val.trim().replace(',', '.');
+      });
+    }
+  });
+
+  document.getElementById('runRowCount').value = editorRows.length;
+  renderEditorTable();
+  updateDataStatus();
+  scheduleEditorDraftSave();
+}
+
+function getValidEditorData() {
+  const xs = [], ys = [];
+  const errors = [];
+  editorRows.forEach((r, i) => {
+    const sx = String(r.x).trim();
+    const sy = String(r.y).trim();
+    if (sx === '' && sy === '') return; // skip blank rows
+    const x = parseFloat(sx.replace(',', '.'));
+    const y = parseFloat(sy.replace(',', '.'));
+    if (isNaN(x) || isNaN(y)) {
+      errors.push('Rij ' + (i + 1) + ' is onvolledig');
+      return;
+    }
+    xs.push(x);
+    ys.push(y);
+  });
+  return { x: xs, y: ys, errors };
+}
+
+function updateDataStatus() {
+  const status = document.getElementById('runDataStatus');
+  const parsed = getValidEditorData();
+  const filled = editorRows.filter(r => String(r.x).trim() !== '' || String(r.y).trim() !== '').length;
+  if (filled === 0) {
+    status.textContent = 'Nog geen data ingevuld.';
+    return;
+  }
+  if (parsed.errors.length) {
+    status.innerHTML = '<span style="color:var(--danger);">' + parsed.errors.length + ' onvolledige rij(en):</span> ' + escapeHtml(parsed.errors.slice(0, 3).join(' · ')) + ' · <span style="color:#10b981;">' + parsed.x.length + ' geldig</span>';
+  } else {
+    status.innerHTML = '<span style="color:#10b981;">✓</span> ' + parsed.x.length + ' geldige metingen';
+  }
+}
+
+function openRunEditor(idx) {
+  editingRunIndex = idx;
+  const editor = document.getElementById('runEditorBox');
+  editor.style.display = 'block';
+  document.querySelector('.runs-top').classList.add('editing');
+  if (idx === null) {
+    document.getElementById('runEditorTitle').textContent = 'Nieuwe run toevoegen';
+    document.getElementById('runNameInput').value = 'Run ' + (rawRuns.length + 1);
+    document.getElementById('runRowCount').value = 15;
+    document.getElementById('runNotesInput').value = '';
+    buildEditorRows(15, null);
+  } else {
+    const r = rawRuns[idx];
+    document.getElementById('runEditorTitle').textContent = 'Run bewerken: ' + r.label;
+    document.getElementById('runNameInput').value = r.label;
+    document.getElementById('runNotesInput').value = r.notes || '';
+    const existing = r.x.map((x, i) => ({ x, y: r.y[i] }));
+    document.getElementById('runRowCount').value = existing.length;
+    buildEditorRows(existing.length, existing);
+  }
+  renderEditorTable();
+  editor.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function closeRunEditor() {
+  document.getElementById('runEditorBox').style.display = 'none';
+  document.querySelector('.runs-top').classList.remove('editing');
+  editingRunIndex = null;
+  clearEditorDraft();
+}
+
+document.getElementById('newRunBtn').addEventListener('click', () => openRunEditor(null));
+document.getElementById('cancelRunBtn').addEventListener('click', () => {
+  if (editorHasContent()) {
+    const msg = '⚠ Je hebt niet-opgeslagen gegevens.\n\n' +
+                'Annuleren betekent dat ALLES weg is:\n' +
+                '• Naam, notities en alle X/Y waardes\n' +
+                '• Ook de auto-save draft wordt gewist\n\n' +
+                'Tip: gebruik "Backup downloaden" hieronder om eerst een JSON-bestand op te slaan.\n\n' +
+                'Echt annuleren?';
+    if (!confirm(msg)) return;
+  }
+  closeRunEditor();
+});
+
+document.getElementById('applyRowCount').addEventListener('click', () => {
+  const inp = document.getElementById('runRowCount');
+  let n = parseInt(inp.value, 10);
+  if (isNaN(n) || n < 1) n = 1;
+  if (n > 500) n = 500;
+  inp.value = n;
+  // Preserve existing rows, add/remove as needed
+  if (n > editorRows.length) {
+    while (editorRows.length < n) editorRows.push({ x: '', y: '' });
+  } else if (n < editorRows.length) {
+    editorRows = editorRows.slice(0, n);
+  }
+  renderEditorTable();
+  scheduleEditorDraftSave();
+});
+
+document.getElementById('clearRunBtn').addEventListener('click', () => {
+  if (!confirm('Alle ingevulde data in deze run wissen?')) return;
+  editorRows.forEach(r => { r.x = ''; r.y = ''; });
+  renderEditorTable();
+  scheduleEditorDraftSave();
+});
+
+document.getElementById('backupDraftBtn').addEventListener('click', () => {
+  // Snapshot the editor as-is — including empty/invalid rows
+  const name = document.getElementById('runNameInput').value.trim();
+  const notes = document.getElementById('runNotesInput').value.trim();
+  const filledRows = editorRows.filter(r => (r.x && r.x !== '') || (r.y && r.y !== '')).length;
+  const data = {
+    version: 1,
+    type: 'sjoel-editor-draft-backup',
+    activeGroup: activeGroup,
+    activeGroupName: groups[activeGroup].name,
+    editingRunIndex: editingRunIndex,
+    name: name,
+    notes: notes,
+    rows: editorRows.map(r => ({ x: r.x || '', y: r.y || '' })),
+    timestamp: Date.now()
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const today = new Date().toISOString().slice(0, 10);
+  const safeName = (name || 'draft').replace(/[^a-zA-Z0-9_-]+/g, '_').slice(0, 30);
+  a.href = url;
+  a.download = 'sjoel-draft-' + safeName + '-' + today + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Backup gedownload (' + filledRows + ' ingevulde rij' + (filledRows === 1 ? '' : 'en') + ')');
+});
+
+// Auto-save on name/notes changes
+document.getElementById('runNameInput').addEventListener('input', scheduleEditorDraftSave);
+document.getElementById('runNotesInput').addEventListener('input', scheduleEditorDraftSave);
+document.getElementById('runNameInput').addEventListener('blur', saveEditorDraftNow);
+document.getElementById('runNotesInput').addEventListener('blur', saveEditorDraftNow);
+// Save right before page unloads (catches refreshes and tab close)
+window.addEventListener('beforeunload', () => { try { saveEditorDraft(); } catch(e) {} });
+window.addEventListener('pagehide', () => { try { saveEditorDraft(); } catch(e) {} });
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') { try { saveEditorDraft(); } catch(e) {} }
+});
+
+document.getElementById('saveRunBtn').addEventListener('click', () => {
+  const name = document.getElementById('runNameInput').value.trim() || ('Run ' + (rawRuns.length + 1));
+  const notes = document.getElementById('runNotesInput').value.trim();
+  const parsed = getValidEditorData();
+  if (!parsed.x.length) {
+    showToast('Geen geldige data — niets opgeslagen');
+    return;
+  }
+  if (parsed.errors.length) {
+    if (!confirm(parsed.errors.length + ' rij(en) zijn onvolledig en worden overgeslagen. Doorgaan met ' + parsed.x.length + ' geldige metingen?')) return;
+  }
+  const runObj = { label: name, x: parsed.x, y: parsed.y };
+  if (notes) runObj.notes = notes;
+  if (editingRunIndex === null) {
+    rawRuns.push(runObj);
+    selectedRuns.clear();
+    selectedRuns.add(rawRuns.length - 1);
+    showToast('Nieuwe run "' + name + '" toegevoegd en actief');
+  } else {
+    rawRuns[editingRunIndex] = runObj;
+    showToast('Run "' + name + '" bijgewerkt');
+  }
+  closeRunEditor();
+  renderRunsList();
+  renderChart();
+  if (document.getElementById('panel-landing').classList.contains('active')) renderLanding();
+  // CRITICAL: persist the change immediately so a refresh doesn't lose data
+  saveCurrentToGroup();
+});
+
+/* === SAVE / LOAD === */
+document.getElementById('saveBtn').addEventListener('click', () => {
+  // Snapshot the current state into the active group before saving
+  saveCurrentToGroup();
+  const data = {
+    version: 3,
+    activeGroup,
+    groups,
+    // Also keep top-level keys for backwards-compat (loads active group's data)
+    selectedRuns: Array.from(selectedRuns),
+    runs: rawRuns,
+    settings: { ...settings },
+    measRef
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const today = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = 'sjoelmonster-' + today + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Bestand gedownload');
+});
+
+document.getElementById('importBtn').addEventListener('click', () => {
+  document.getElementById('importFile').click();
+});
+
+// Inline "Download als JSON" button in Runs tab triggers the same logic as the top-bar Save button
+document.getElementById('saveBtnInline').addEventListener('click', () => {
+  document.getElementById('saveBtn').click();
+});
+
+document.getElementById('importFile').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const data = JSON.parse(ev.target.result);
+
+      // EDITOR DRAFT BACKUP: a paused/incomplete editor session saved via the editor's Backup button
+      if (data.type === 'sjoel-editor-draft-backup' && Array.isArray(data.rows)) {
+        // Switch to the group this backup was made in (if needed)
+        if (data.activeGroup && data.activeGroup !== activeGroup && groups[data.activeGroup]) {
+          if (isEditorOpen() && editorHasContent()) {
+            showToast('⚠ Sluit eerst je huidige bewerking voor je een backup importeert');
+            return;
+          }
+          saveCurrentToGroup();
+          loadFromGroup(data.activeGroup);
+          persistGroups();
+          refreshGroupUI();
+          rerenderEverythingForGroup();
+        }
+        // Switch to Runs tab and open editor
+        const runsTabBtn = document.querySelector('.tab[data-tab="runs"]');
+        if (runsTabBtn && !runsTabBtn.classList.contains('active')) runsTabBtn.click();
+        setTimeout(() => {
+          openRunEditor(typeof data.editingRunIndex === 'number' ? data.editingRunIndex : null);
+          editorRows = data.rows.map(r => ({ x: r.x || '', y: r.y || '' }));
+          document.getElementById('runRowCount').value = editorRows.length;
+          if (data.name) document.getElementById('runNameInput').value = data.name;
+          if (data.notes) document.getElementById('runNotesInput').value = data.notes;
+          renderEditorTable();
+          saveEditorDraftNow();
+          const filled = editorRows.filter(r => (r.x && r.x !== '') || (r.y && r.y !== '')).length;
+          showToast('Backup geladen in editor (' + filled + ' rijen) — kan verder bewerken');
+        }, 80);
+        return;
+      }
+
+      // New format (version 3+): full groups object
+      if (data.groups && data.groups.A && data.groups.B) {
+        // Validate each group's runs
+        ['A','B'].forEach(k => {
+          if (!Array.isArray(data.groups[k].rawRuns)) throw new Error('Groep ' + k + ' mist runs');
+          data.groups[k].rawRuns.forEach((r, i) => {
+            if (!r.label || !Array.isArray(r.x) || !Array.isArray(r.y) || r.x.length !== r.y.length) {
+              throw new Error('Groep ' + k + ' run ' + i + ' is ongeldig');
+            }
+          });
+        });
+        groups = data.groups;
+        activeGroup = (data.activeGroup === 'B') ? 'B' : 'A';
+        loadFromGroup(activeGroup);
+        persistGroups();
+        refreshGroupUI();
+        rerenderEverythingForGroup();
+        showToast('Bestand geïmporteerd (beide groepen geladen)');
+        return;
+      }
+
+      // Old format (version 1-2): single set of runs → load into active group
+      if (!Array.isArray(data.runs)) throw new Error('Geen runs-array gevonden');
+      data.runs.forEach((r, i) => {
+        if (!r.label || !Array.isArray(r.x) || !Array.isArray(r.y) || r.x.length !== r.y.length) {
+          throw new Error('Run ' + i + ' is ongeldig');
+        }
+      });
+      rawRuns = data.runs;
+      if (Array.isArray(data.selectedRuns)) {
+        selectedRuns = new Set(data.selectedRuns.filter(i => i >= 0 && i < rawRuns.length));
+      } else if (typeof data.activeRunIndex === 'number') {
+        selectedRuns = new Set([Math.min(data.activeRunIndex, rawRuns.length - 1)]);
+      } else {
+        selectedRuns = new Set([0]);
+      }
+      if (selectedRuns.size === 0 && rawRuns.length) selectedRuns.add(0);
+      if (data.settings) {
+        Object.keys(defaults).forEach(k => {
+          if (typeof data.settings[k] === 'number') settings[k] = data.settings[k];
+        });
+      }
+      if (data.measRef && MEAS_OFFSETS[data.measRef]) {
+        measRef = data.measRef;
+        const sel = document.getElementById('measRef');
+        if (sel) sel.value = measRef;
+      }
+      saveCurrentToGroup();
+      triggerRender();
+      renderRunsList();
+      showToast('Bestand geïmporteerd in ' + groups[activeGroup].name + ' (' + rawRuns.length + ' run' + (rawRuns.length === 1 ? '' : 's') + ')');
+    } catch (err) {
+      showToast('Importfout: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = ''; // reset so same file can be re-imported
+});
+
+document.querySelectorAll('#compareMode button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#compareMode button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    compareMode = b.dataset.cmp;
+    renderCompareTable();
+  });
+});
+
+document.querySelectorAll('#gaussAxisToggle button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#gaussAxisToggle button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    compareGaussAxis = b.dataset.ax;
+    renderCompareTable(); // also re-renders the gauss chart
+  });
+});
+
+buildSliders('globalSliders', 'g_', sliderDefs);
+document.getElementById('measDiamLbl').textContent = settings.diskD;
+
+// ===== GROUPS: restore from storage, hook up switcher =====
+const GROUP_MEMBERS = {
+  A: ['Demir', 'Matthies', 'Taio', 'Len', 'Abdelaziz'],
+  B: ['Robin', 'Mattia', 'Alex', 'Dante', 'Angelique']
+};
+const GROUP_DISPLAY_NAMES = {
+  A: 'Sjoelmonster',
+  B: 'Pea Shooter'
+};
+
+function refreshGroupUI() {
+  document.querySelectorAll('#groupSwitcher button').forEach(b => {
+    b.classList.toggle('active', b.dataset.group === activeGroup);
+  });
+  // Render member chips for the active group
+  const listEl = document.getElementById('groupMembersList');
+  if (listEl) {
+    const memberChips = GROUP_MEMBERS[activeGroup]
+      .map(n => '<span class="member-chip">' + escapeHtml(n) + '</span>')
+      .join('');
+    const organizerChip = '<span class="member-chip organizer-chip" title="Organisator">★ Mr. Voordeckers</span>';
+    listEl.innerHTML = memberChips + organizerChip;
+  }
+}
+
+function rerenderEverythingForGroup() {
+  document.querySelectorAll('input[name="measRef"]').forEach(r => { r.checked = (r.value === measRef); });
+  syncSliders('g_', sliderDefs);
+  document.getElementById('measDiamLbl').textContent = settings.diskD;
+  const tubeInput = document.getElementById('tubeLength');
+  if (tubeInput) tubeInput.value = tubeLength;
+  renderChart();
+  drawDimDiagram();
+  renderRunsList();
+  renderResetValues();
+  renderCompareTable();
+  if (document.getElementById('panel-landing').classList.contains('active')) renderLanding();
+}
+
+document.querySelectorAll('#groupSwitcher button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const target = btn.dataset.group;
+    if (target === activeGroup) return;
+    // Block group switch if editor has unsaved content (would lose the draft on switch)
+    if (isEditorOpen() && editorHasContent()) {
+      showToast('⚠ Bewaar of annuleer eerst je openstaande run-bewerking');
+      const editorBox = document.getElementById('runEditorBox');
+      if (editorBox) {
+        editorBox.classList.add('editor-flash');
+        setTimeout(() => editorBox.classList.remove('editor-flash'), 600);
+        editorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return;
+    }
+    saveCurrentToGroup();
+    loadFromGroup(target);
+    persistGroups();
+    refreshGroupUI();
+    rerenderEverythingForGroup();
+    showToast('Gewisseld naar ' + groups[target].name);
+  });
+});
+
+// Auto-persist when leaving the page or before any unload
+window.addEventListener('beforeunload', () => {
+  try { saveCurrentToGroup(); } catch(e) {}
+});
+// Also persist periodically (every 10s) in case browser is force-closed
+setInterval(() => {
+  try { saveCurrentToGroup(); } catch(e) {}
+}, 10000);
+
+// Restore from storage if available
+if (restoreGroupsFromStorage()) {
+  refreshGroupUI();
+}
+
+renderChart();
+drawDimDiagram();
+renderRunsList();
+renderResetValues();
+renderCompareTable();
+refreshGroupUI();
+
+// Check for unsaved editor draft from a previous session — offer to restore
+setTimeout(() => tryRestoreEditorDraft(), 300);
+</script>
+</body>
+</html>
