@@ -188,6 +188,41 @@
     color: var(--text);
     font-weight: 500;
   }
+  .autosave-indicator {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11.5px; color: #10b981;
+    padding: 4px 10px;
+    border: 1px solid rgba(16,185,129,0.3);
+    background: rgba(16,185,129,0.06);
+    border-radius: 999px;
+    opacity: 0; transition: opacity 0.25s ease;
+    pointer-events: auto;
+    cursor: help;
+  }
+  .autosave-indicator.visible { opacity: 1; }
+  .autosave-indicator svg { flex-shrink: 0; }
+  .editor-lock-notice {
+    display: flex; align-items: center; gap: 8px;
+    margin: 8px 0 14px;
+    padding: 8px 12px;
+    background: rgba(59,130,246,0.06);
+    border: 1px solid rgba(59,130,246,0.25);
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+  .editor-lock-notice svg { color: var(--accent); }
+  .editor-lock-notice b { color: var(--text); font-weight: 500; }
+  @keyframes editorFlashAnim {
+    0%   { box-shadow: 0 0 0 0 rgba(245,158,11,0); }
+    20%  { box-shadow: 0 0 0 4px rgba(245,158,11,0.45); }
+    100% { box-shadow: 0 0 0 0 rgba(245,158,11,0); }
+  }
+  .editor-flash {
+    animation: editorFlashAnim 0.6s ease-out;
+    border-color: #f59e0b !important;
+  }
   .btn:hover { background: var(--hover); }
   .btn.active { border-color: var(--text); }
   .btn-with-icon {
@@ -1334,6 +1369,12 @@
 
       <div class="settings-section" id="runEditorBox" style="display:none;">
         <h3 id="runEditorTitle">Run bewerken</h3>
+        <div class="editor-lock-notice">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          <span>Tabs en groep-wissel zijn vergrendeld tijdens bewerking. Gebruik <b>Bewaren</b>, <b>Annuleren</b> of download een <b>backup</b> om verder te gaan.</span>
+        </div>
         <div class="slider-row" style="grid-template-columns: 160px 1fr;">
           <label for="runNameInput">Naam</label>
           <input type="text" id="runNameInput" class="num-input" style="width:auto;text-align:left;" />
@@ -1359,9 +1400,21 @@
           </div>
           <p class="desc" id="runDataStatus" style="margin-top:6px;">—</p>
         </div>
-        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
           <button class="btn" id="saveRunBtn" style="border-color:var(--accent);color:var(--accent);">Bewaren</button>
           <button class="btn" id="cancelRunBtn">Annuleren</button>
+          <button class="btn btn-with-icon" id="backupDraftBtn" title="Download een JSON-backup van je huidige invoer — ook onvolledige rijen worden meegenomen. Importeer later met 'Importeer JSON' om verder te werken.">
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Backup downloaden
+          </button>
+          <span class="autosave-indicator" id="autosaveIndicator" title="Wijzigingen worden automatisch tijdelijk opgeslagen — bij refresh kun je verder waar je was.">
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span class="autosave-text">Auto-opgeslagen</span>
+          </span>
           <button class="btn" id="clearRunBtn" style="margin-left:auto;">Alles wissen</button>
         </div>
       </div>
@@ -2861,8 +2914,40 @@ document.getElementById('targetProb').addEventListener('input', () => {
   renderGate();
 });
 
+function isEditorOpen() {
+  const box = document.getElementById('runEditorBox');
+  return box && box.style.display !== 'none';
+}
+
+function editorHasContent() {
+  if (!isEditorOpen()) return false;
+  if (editorRows.some(r => (r.x && r.x !== '') || (r.y && r.y !== ''))) return true;
+  const name = document.getElementById('runNameInput');
+  const notes = document.getElementById('runNotesInput');
+  if (name && name.value.trim()) return true;
+  if (notes && notes.value.trim()) return true;
+  return false;
+}
+
 document.querySelectorAll('.tab').forEach(t => {
-  t.addEventListener('click', () => {
+  t.addEventListener('click', (e) => {
+    // Block tab switch if editor is open with unsaved content
+    if (isEditorOpen() && editorHasContent()) {
+      const targetTab = t.dataset.tab;
+      // If they're already on Runs and clicking Runs again, do nothing special
+      if (targetTab !== 'runs') {
+        e.preventDefault();
+        showToast('⚠ Bewaar of annuleer eerst je openstaande run-bewerking');
+        // Make the editor flash to draw attention
+        const editorBox = document.getElementById('runEditorBox');
+        if (editorBox) {
+          editorBox.classList.add('editor-flash');
+          setTimeout(() => editorBox.classList.remove('editor-flash'), 600);
+          editorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
+      }
+    }
     document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
     document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
     t.classList.add('active');
@@ -3260,6 +3345,95 @@ function escapeHtml(s) {
 // rows is an array of { x, y } where x/y are strings (so empty allowed)
 let editorRows = [];
 
+// === EDITOR DRAFT AUTO-SAVE ===
+// While editing, the rows + name + notes are saved to localStorage on every keystroke.
+// On page load, if a draft exists, ask the user if they want to restore it.
+const EDITOR_DRAFT_KEY = 'sjoel-editor-draft';
+
+function saveEditorDraft() {
+  // Only save if the editor is actually open
+  const editorBox = document.getElementById('runEditorBox');
+  if (!editorBox || editorBox.style.display === 'none') return;
+  // Don't save if there's no meaningful data yet
+  const hasData = editorRows.some(r => r.x !== '' || r.y !== '');
+  const nameInput = document.getElementById('runNameInput');
+  const notesInput = document.getElementById('runNotesInput');
+  const name = nameInput ? nameInput.value : '';
+  const notes = notesInput ? notesInput.value : '';
+  if (!hasData && !name && !notes) {
+    clearEditorDraft();
+    return;
+  }
+  try {
+    localStorage.setItem(EDITOR_DRAFT_KEY, JSON.stringify({
+      version: 1,
+      activeGroup: activeGroup,
+      editingRunIndex: editingRunIndex,
+      name: name,
+      notes: notes,
+      rows: editorRows,
+      timestamp: Date.now()
+    }));
+    // Show "Auto-opgeslagen" indicator briefly
+    const indicator = document.getElementById('autosaveIndicator');
+    if (indicator) {
+      indicator.classList.add('visible');
+      clearTimeout(saveEditorDraft._fadeTimer);
+      saveEditorDraft._fadeTimer = setTimeout(() => indicator.classList.remove('visible'), 1500);
+    }
+  } catch(e) { /* ignore */ }
+}
+
+function clearEditorDraft() {
+  try { localStorage.removeItem(EDITOR_DRAFT_KEY); } catch(e) {}
+}
+
+function getEditorDraft() {
+  try {
+    const raw = localStorage.getItem(EDITOR_DRAFT_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (!data || !Array.isArray(data.rows)) return null;
+    return data;
+  } catch(e) { return null; }
+}
+
+function tryRestoreEditorDraft() {
+  const draft = getEditorDraft();
+  if (!draft) return;
+  const hasContent = draft.rows.some(r => (r.x && r.x !== '') || (r.y && r.y !== ''))
+                  || (draft.name && draft.name.trim())
+                  || (draft.notes && draft.notes.trim());
+  if (!hasContent) {
+    clearEditorDraft();
+    return;
+  }
+  // Switch to the correct group if needed
+  if (draft.activeGroup && draft.activeGroup !== activeGroup && groups[draft.activeGroup]) {
+    saveCurrentToGroup();
+    loadFromGroup(draft.activeGroup);
+    persistGroups();
+    refreshGroupUI();
+    rerenderEverythingForGroup();
+  }
+  // Switch to the Runs tab
+  const runsTabBtn = document.querySelector('.tab[data-tab="runs"]');
+  if (runsTabBtn) runsTabBtn.click();
+  // Open editor and restore data — no prompt, just do it
+  setTimeout(() => {
+    openRunEditor(draft.editingRunIndex);
+    editorRows = draft.rows.map(r => ({ x: r.x || '', y: r.y || '' }));
+    document.getElementById('runRowCount').value = editorRows.length;
+    if (draft.name) document.getElementById('runNameInput').value = draft.name;
+    if (draft.notes) document.getElementById('runNotesInput').value = draft.notes;
+    renderEditorTable();
+    const filledRows = draft.rows.filter(r => (r.x && r.x !== '') || (r.y && r.y !== '')).length;
+    const ageMin = Math.round((Date.now() - draft.timestamp) / 60000);
+    const ageStr = ageMin < 1 ? 'zojuist' : (ageMin === 1 ? '1 minuut geleden' : ageMin + ' minuten geleden');
+    showToast('↻ Niet-bewaarde wijzigingen hersteld (' + filledRows + ' rijen, ' + ageStr + ')');
+  }, 100);
+}
+
 function buildEditorRows(n, existing) {
   editorRows = [];
   for (let i = 0; i < n; i++) {
@@ -3287,6 +3461,7 @@ function renderEditorTable() {
     inp.addEventListener('input', onCellInput);
     inp.addEventListener('paste', onCellPaste);
     inp.addEventListener('keydown', onCellKey);
+    inp.addEventListener('blur', saveEditorDraftNow);
   });
   tbody.querySelectorAll('.row-del').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -3296,6 +3471,7 @@ function renderEditorTable() {
       document.getElementById('runRowCount').value = editorRows.length;
       renderEditorTable();
       updateDataStatus();
+      scheduleEditorDraftSave();
     });
   });
   updateDataStatus();
@@ -3313,6 +3489,19 @@ function onCellInput(e) {
     e.target.classList.add('invalid');
   }
   updateDataStatus();
+  scheduleEditorDraftSave();
+}
+
+// Debounce draft saves so we don't hammer localStorage on every keystroke
+let _draftTimer = null;
+function scheduleEditorDraftSave() {
+  if (_draftTimer) clearTimeout(_draftTimer);
+  _draftTimer = setTimeout(() => saveEditorDraft(), 200);
+}
+// Save immediately (no debounce) — for blur events
+function saveEditorDraftNow() {
+  if (_draftTimer) { clearTimeout(_draftTimer); _draftTimer = null; }
+  saveEditorDraft();
 }
 
 function onCellKey(e) {
@@ -3370,6 +3559,7 @@ function onCellPaste(e) {
   document.getElementById('runRowCount').value = editorRows.length;
   renderEditorTable();
   updateDataStatus();
+  scheduleEditorDraftSave();
 }
 
 function getValidEditorData() {
@@ -3434,10 +3624,22 @@ function closeRunEditor() {
   document.getElementById('runEditorBox').style.display = 'none';
   document.querySelector('.runs-top').classList.remove('editing');
   editingRunIndex = null;
+  clearEditorDraft();
 }
 
 document.getElementById('newRunBtn').addEventListener('click', () => openRunEditor(null));
-document.getElementById('cancelRunBtn').addEventListener('click', closeRunEditor);
+document.getElementById('cancelRunBtn').addEventListener('click', () => {
+  if (editorHasContent()) {
+    const msg = '⚠ Je hebt niet-opgeslagen gegevens.\n\n' +
+                'Annuleren betekent dat ALLES weg is:\n' +
+                '• Naam, notities en alle X/Y waardes\n' +
+                '• Ook de auto-save draft wordt gewist\n\n' +
+                'Tip: gebruik "Backup downloaden" hieronder om eerst een JSON-bestand op te slaan.\n\n' +
+                'Echt annuleren?';
+    if (!confirm(msg)) return;
+  }
+  closeRunEditor();
+});
 
 document.getElementById('applyRowCount').addEventListener('click', () => {
   const inp = document.getElementById('runRowCount');
@@ -3452,12 +3654,56 @@ document.getElementById('applyRowCount').addEventListener('click', () => {
     editorRows = editorRows.slice(0, n);
   }
   renderEditorTable();
+  scheduleEditorDraftSave();
 });
 
 document.getElementById('clearRunBtn').addEventListener('click', () => {
   if (!confirm('Alle ingevulde data in deze run wissen?')) return;
   editorRows.forEach(r => { r.x = ''; r.y = ''; });
   renderEditorTable();
+  scheduleEditorDraftSave();
+});
+
+document.getElementById('backupDraftBtn').addEventListener('click', () => {
+  // Snapshot the editor as-is — including empty/invalid rows
+  const name = document.getElementById('runNameInput').value.trim();
+  const notes = document.getElementById('runNotesInput').value.trim();
+  const filledRows = editorRows.filter(r => (r.x && r.x !== '') || (r.y && r.y !== '')).length;
+  const data = {
+    version: 1,
+    type: 'sjoel-editor-draft-backup',
+    activeGroup: activeGroup,
+    activeGroupName: groups[activeGroup].name,
+    editingRunIndex: editingRunIndex,
+    name: name,
+    notes: notes,
+    rows: editorRows.map(r => ({ x: r.x || '', y: r.y || '' })),
+    timestamp: Date.now()
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const today = new Date().toISOString().slice(0, 10);
+  const safeName = (name || 'draft').replace(/[^a-zA-Z0-9_-]+/g, '_').slice(0, 30);
+  a.href = url;
+  a.download = 'sjoel-draft-' + safeName + '-' + today + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Backup gedownload (' + filledRows + ' ingevulde rij' + (filledRows === 1 ? '' : 'en') + ')');
+});
+
+// Auto-save on name/notes changes
+document.getElementById('runNameInput').addEventListener('input', scheduleEditorDraftSave);
+document.getElementById('runNotesInput').addEventListener('input', scheduleEditorDraftSave);
+document.getElementById('runNameInput').addEventListener('blur', saveEditorDraftNow);
+document.getElementById('runNotesInput').addEventListener('blur', saveEditorDraftNow);
+// Save right before page unloads (catches refreshes and tab close)
+window.addEventListener('beforeunload', () => { try { saveEditorDraft(); } catch(e) {} });
+window.addEventListener('pagehide', () => { try { saveEditorDraft(); } catch(e) {} });
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') { try { saveEditorDraft(); } catch(e) {} }
 });
 
 document.getElementById('saveRunBtn').addEventListener('click', () => {
@@ -3486,6 +3732,8 @@ document.getElementById('saveRunBtn').addEventListener('click', () => {
   renderRunsList();
   renderChart();
   if (document.getElementById('panel-landing').classList.contains('active')) renderLanding();
+  // CRITICAL: persist the change immediately so a refresh doesn't lose data
+  saveCurrentToGroup();
 });
 
 /* === SAVE / LOAD === */
@@ -3531,6 +3779,37 @@ document.getElementById('importFile').addEventListener('change', (e) => {
   reader.onload = (ev) => {
     try {
       const data = JSON.parse(ev.target.result);
+
+      // EDITOR DRAFT BACKUP: a paused/incomplete editor session saved via the editor's Backup button
+      if (data.type === 'sjoel-editor-draft-backup' && Array.isArray(data.rows)) {
+        // Switch to the group this backup was made in (if needed)
+        if (data.activeGroup && data.activeGroup !== activeGroup && groups[data.activeGroup]) {
+          if (isEditorOpen() && editorHasContent()) {
+            showToast('⚠ Sluit eerst je huidige bewerking voor je een backup importeert');
+            return;
+          }
+          saveCurrentToGroup();
+          loadFromGroup(data.activeGroup);
+          persistGroups();
+          refreshGroupUI();
+          rerenderEverythingForGroup();
+        }
+        // Switch to Runs tab and open editor
+        const runsTabBtn = document.querySelector('.tab[data-tab="runs"]');
+        if (runsTabBtn && !runsTabBtn.classList.contains('active')) runsTabBtn.click();
+        setTimeout(() => {
+          openRunEditor(typeof data.editingRunIndex === 'number' ? data.editingRunIndex : null);
+          editorRows = data.rows.map(r => ({ x: r.x || '', y: r.y || '' }));
+          document.getElementById('runRowCount').value = editorRows.length;
+          if (data.name) document.getElementById('runNameInput').value = data.name;
+          if (data.notes) document.getElementById('runNotesInput').value = data.notes;
+          renderEditorTable();
+          saveEditorDraftNow();
+          const filled = editorRows.filter(r => (r.x && r.x !== '') || (r.y && r.y !== '')).length;
+          showToast('Backup geladen in editor (' + filled + ' rijen) — kan verder bewerken');
+        }, 80);
+        return;
+      }
 
       // New format (version 3+): full groups object
       if (data.groups && data.groups.A && data.groups.B) {
@@ -3655,6 +3934,17 @@ document.querySelectorAll('#groupSwitcher button').forEach(btn => {
   btn.addEventListener('click', () => {
     const target = btn.dataset.group;
     if (target === activeGroup) return;
+    // Block group switch if editor has unsaved content (would lose the draft on switch)
+    if (isEditorOpen() && editorHasContent()) {
+      showToast('⚠ Bewaar of annuleer eerst je openstaande run-bewerking');
+      const editorBox = document.getElementById('runEditorBox');
+      if (editorBox) {
+        editorBox.classList.add('editor-flash');
+        setTimeout(() => editorBox.classList.remove('editor-flash'), 600);
+        editorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return;
+    }
     saveCurrentToGroup();
     loadFromGroup(target);
     persistGroups();
@@ -3684,6 +3974,9 @@ renderRunsList();
 renderResetValues();
 renderCompareTable();
 refreshGroupUI();
+
+// Check for unsaved editor draft from a previous session — offer to restore
+setTimeout(() => tryRestoreEditorDraft(), 300);
 </script>
 </body>
 </html>
