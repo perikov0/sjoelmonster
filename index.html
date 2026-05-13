@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="nl">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!-- saved from url=(0049)file:///C:/Users/grays/Downloads/sjoel_v42_2.html -->
+<html lang="nl"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Data Analyse — Engineering</title>
-<link rel="icon" type="image/png" href="icon.png">
-<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" type="image/png" href="file:///C:/Users/grays/Downloads/icon.png">
+<link rel="apple-touch-icon" href="file:///C:/Users/grays/Downloads/icon.png">
 <style>
   :root {
     --bg: #ffffff; --bg-soft: #fafafa; --text: #1a1a1a;
@@ -158,7 +158,32 @@
     border-radius: 6px; padding: 5px 12px; font-size: 12.5px;
     cursor: pointer; color: var(--text); font-family: inherit;
   }
-  .save-warning {
+  .editor-data-warning {
+    margin-top: 16px;
+    padding: 10px 12px;
+    background: rgba(245,158,11,0.05);
+    border: 1px solid rgba(245,158,11,0.25);
+    border-left: 2px solid #f59e0b;
+    border-radius: 6px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: 11.5px;
+    line-height: 1.5;
+  }
+  .edw-icon { color: #f59e0b; flex-shrink: 0; margin-top: 1px; opacity: 0.8; }
+  .edw-body strong {
+    display: block;
+    color: var(--text);
+    font-weight: 500;
+    font-size: 12px;
+    margin-bottom: 3px;
+  }
+  .edw-body p {
+    margin: 0;
+    color: var(--muted);
+  }
+  .edw-body p b { color: var(--text); font-weight: 500; }
     margin-top: 18px;
     padding: 12px 16px;
     background: rgba(245,158,11,0.08);
@@ -229,6 +254,65 @@
     display: inline-flex; align-items: center; gap: 6px;
   }
   .btn-with-icon svg { flex-shrink: 0; }
+  .btn-save {
+    padding: 6px 12px;
+    align-items: center;
+  }
+  .btn-save-label {
+    display: flex; flex-direction: column;
+    align-items: flex-start;
+    line-height: 1.15;
+    text-align: left;
+  }
+  .btn-save-title {
+    font-size: 12.5px;
+    font-weight: 500;
+  }
+  .btn-save-sub {
+    font-size: 10.5px;
+    color: var(--muted);
+    font-weight: 400;
+    margin-top: 1px;
+  }
+  .runs-action-row {
+    margin-top: 14px;
+    display: flex; gap: 8px; flex-wrap: wrap;
+    align-items: center;
+  }
+  .action-divider {
+    width: 1px; height: 18px;
+    background: var(--line-strong);
+    margin: 0 4px;
+  }
+  .btn-primary-soft {
+    color: var(--accent);
+    border-color: var(--accent) !important;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-primary-soft svg { flex-shrink: 0; }
+  .btn-primary-soft:hover {
+    background: var(--accent-soft-1) !important;
+  }
+  /* Pulsing dot on the save button — gentle reminder that you should save */
+  .save-dot {
+    display: inline-block;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #f59e0b;
+    margin-left: 4px;
+    box-shadow: 0 0 0 0 rgba(245,158,11,0.6);
+    animation: savePulse 2.2s ease-in-out infinite;
+  }
+  .save-dot.muted {
+    background: #10b981;
+    animation: none;
+    box-shadow: none;
+    opacity: 0.6;
+  }
+  @keyframes savePulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(245,158,11,0); }
+    50%      { box-shadow: 0 0 0 5px rgba(245,158,11,0.18); }
+  }
   .run-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; }
   .run-btn {
     background: transparent; border: 1px solid var(--line);
@@ -1029,11 +1113,8 @@
     cursor: pointer;
   }
   .run-item:hover { background: var(--hover); }
-  .run-item.active {
-    border-color: var(--accent);
-    background: var(--accent-soft-1);
-  }
-  .run-item.active:hover { background: var(--accent-soft-2); }
+  .run-item.active { background: var(--card); }
+  .run-item.active:hover { background: var(--hover); }
   .run-check {
     width: 16px; height: 16px;
     accent-color: var(--accent);
@@ -1158,8 +1239,8 @@
   .dim-wall { fill: var(--wall); stroke: var(--wall-edge); }
 </style>
 </head>
-<body data-theme="light">
-<div class="toast" id="toast"></div>
+<body data-theme="dark">
+<div class="toast" id="toast">↻ Niet-bewaarde wijzigingen hersteld (0 rijen, zojuist)</div>
 <div class="wrap">
 
   <div class="topbar">
@@ -1170,15 +1251,15 @@
     <div style="display:flex;gap:8px;flex-shrink:0;">
       <button class="theme-toggle" id="saveBtn" title="Download runs en instellingen als JSON" style="display:none;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line>
         </svg>
         <span>Save</span>
       </button>
       <button class="theme-toggle" id="themeBtn" title="Wissel licht/donker">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+          <circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
         </svg>
-        <span id="themeLabel">Donker</span>
+        <span id="themeLabel">Licht</span>
       </button>
     </div>
   </div>
@@ -1186,7 +1267,7 @@
   <div class="group-bar">
     <div class="group-bar-label">
       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:6px;">
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
       </svg>
       Groep:
     </div>
@@ -1196,22 +1277,22 @@
     </div>
     <div class="group-members" id="groupMembers">
       <span class="group-members-label">Leden:</span>
-      <span class="group-members-list" id="groupMembersList"></span>
+      <span class="group-members-list" id="groupMembersList"><span class="member-chip">Demir</span><span class="member-chip">Matthies</span><span class="member-chip">Taio</span><span class="member-chip">Len</span><span class="member-chip">Abdelaziz</span><span class="member-chip organizer-chip" title="Organisator">★ Mr. Voordeckers</span></span>
     </div>
   </div>
 
   <div class="tabs">
-    <button class="tab active" data-tab="dashboard">Dashboard</button>
+    <button class="tab" data-tab="dashboard">Dashboard</button>
     <button class="tab" data-tab="landing">Landingen</button>
-    <button class="tab" data-tab="runs">Runs</button>
+    <button class="tab active" data-tab="runs">Runs</button>
     <button class="tab" data-tab="settings">Instellingen</button>
     <button class="tab" data-tab="info">Info</button>
   </div>
 
-  <div class="panel active" id="panel-dashboard">
+  <div class="panel" id="panel-dashboard">
     <div class="empty-state" id="dashboardEmpty" style="display:none;">
       <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-5"/>
+        <path d="M3 3v18h18"></path><path d="M7 14l3-3 3 3 5-5"></path>
       </svg>
       <div class="empty-state-title">Geen meetdata voor deze groep</div>
       <div>Voeg een meetreeks toe om de gausverdeling, poortkans en statistieken te zien.</div>
@@ -1222,7 +1303,7 @@
       <button class="btn active" data-axis="x">X-richting</button>
       <button class="btn" data-axis="y">Y-richting</button>
     </div>
-    <div class="stat-grid" id="stats"></div>
+    <div class="stat-grid" id="stats"><div class="stat"><p class="stat-label" data-tip="μ — gemiddelde landingspositie op de gekozen as. Geeft aan waar de schijven gemiddeld terechtkomen. Idealiter dicht bij het midden van de poortenrij.">Gemiddelde (μ)</p><p class="stat-val">305.7 mm</p></div><div class="stat"><p class="stat-label" data-tip="σ — standaardafwijking. Een maat voor de spreiding van de worpen. Hoe kleiner σ, hoe consistenter de worp en hoe hoger de slaagkans.">Std. afwijking (σ)</p><p class="stat-val hl">38.1 mm</p></div><div class="stat"><p class="stat-label" data-tip="Laagste gemeten waarde in deze richting (extreemste worp links/onder).">Min</p><p class="stat-val">126 mm</p></div><div class="stat"><p class="stat-label" data-tip="Hoogste gemeten waarde in deze richting (extreemste worp rechts/boven).">Max</p><p class="stat-val">396 mm</p></div><div class="stat"><p class="stat-label" data-tip="Totaal aantal schijven in de geselecteerde meetreeks(en).">Metingen (n)</p><p class="stat-val">100</p></div></div>
     <div class="legend">
       <span><span class="sw" style="background:var(--accent-soft-3)"></span>±1σ — 68%</span>
       <span><span class="sw" style="background:var(--accent-soft-2)"></span>±2σ — 95%</span>
@@ -1231,21 +1312,21 @@
       <span class="legend-gate-entry"><span class="sw" style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.7);"></span>Poortje (80 mm)</span>
       <span class="legend-gate-entry"><span class="sw" style="background:rgba(16,185,129,0.22);border:1px dashed rgba(16,185,129,0.5);"></span>Score-zone schijfmidden</span>
     </div>
-    <div class="chart-wrap"><canvas id="gc"></canvas></div>
+    <div class="chart-wrap"><canvas id="gc" width="1132" height="320" style="display: block; box-sizing: border-box; height: 320px; width: 1132px;"></canvas></div>
     <h2 class="gate-title">Poortkans per poortje</h2>
     <p style="color:var(--muted);font-size:12.5px;margin:-8px 0 14px;">Parameters kun je aanpassen in de <b>Instellingen</b>-tab.</p>
     <div class="dash-tables">
       <table class="geom-table">
-        <tr><td class="label">Totale rij-breedte</td><td class="val"><span id="tTotalW">—</span> mm</td></tr>
+        <tbody><tr><td class="label">Totale rij-breedte</td><td class="val"><span id="tTotalW">480</span> mm</td></tr>
         <tr><td class="label">Effectieve marge / poort</td><td class="val">±<span id="tMargin">14</span> mm</td></tr>
-        <tr><td class="label">Centrum poortenrij</td><td class="val"><span id="tCenter">—</span> mm</td></tr>
-        <tr><td class="label">Gemiddelde landing (μ)</td><td class="val"><span id="tMu">—</span> mm</td></tr>
-        <tr><td class="label">Std. afwijking (σ)</td><td class="val"><span id="tSigma">—</span> mm</td></tr>
-        <tr class="highlight"><td class="label">Kans door één van de poorten</td><td class="val"><span id="tProb">—</span>%</td></tr>
-      </table>
+        <tr><td class="label">Centrum poortenrij</td><td class="val"><span id="tCenter">300</span> mm</td></tr>
+        <tr><td class="label">Gemiddelde landing (μ)</td><td class="val"><span id="tMu">305.7</span> mm</td></tr>
+        <tr><td class="label">Std. afwijking (σ)</td><td class="val"><span id="tSigma">38.1</span> mm</td></tr>
+        <tr class="highlight"><td class="label">Kans door één van de poorten</td><td class="val"><span id="tProb">30.6</span>%</td></tr>
+      </tbody></table>
       <div>
         <h3 style="margin:0 0 8px;font-size:13px;font-weight:500;color:var(--muted);">Kans per individuele poort</h3>
-        <table class="score-table" id="perGateTable"></table>
+        <table class="score-table" id="perGateTable"><tbody><tr><th>Poort</th><th>Centrum</th><th>Score</th><th>Kans</th></tr><tr><td>1</td><td>100 mm</td><td class="score">2</td><td>0.0%</td></tr><tr><td>2</td><td>200 mm</td><td class="score">5</td><td>0.7%</td></tr><tr><td>3</td><td>300 mm</td><td class="score">3</td><td>28.3%</td></tr><tr><td>4</td><td>400 mm</td><td class="score">1</td><td>1.5%</td></tr><tr><td>5</td><td>500 mm</td><td class="score">4</td><td>0.0%</td></tr><tr><td colspan="3" style="text-align:right;color:var(--muted);">Verwachte punten / worp:</td><td class="score">0.90</td></tr></tbody></table>
       </div>
     </div>
 
@@ -1257,11 +1338,11 @@
         </div>
         <div class="target-prob-input">
           <label for="targetProb">Doel-slaagkans:</label>
-          <input type="number" id="targetProb" min="1" max="99" step="1" value="60" />
+          <input type="number" id="targetProb" min="1" max="99" step="1" value="60">
           <span style="color:var(--muted);">%</span>
         </div>
       </div>
-      <div class="target-prob-result" id="targetProbResult"></div>
+      <div class="target-prob-result" id="targetProbResult"><p class="tp-headline">Om <b style="color:var(--text);">60%</b> slaagkans te halen, moet je dit bereiken:</p><div class="tp-row"><span class="tp-label">Gemiddelde landing (μ)<small>op de X-as, optimaal richtpunt</small></span><span class="tp-val">300 <small>mm</small></span></div><div class="tp-row"><span class="tp-label">Standaardafwijking (σ)<small>maximale spreiding in X-richting</small></span><span class="tp-val">≤ 16.6 <small>mm</small></span></div><div class="tp-summary">Huidige situatie: μ = <b>305.7 mm</b>, σ = <b>38.1 mm</b> → slaagkans <b>30.6%</b>.<br>Je moet je σ met <b>21.5 mm</b> verlagen (≈ 56% consistenter werpen). Dit kan door: stabielere worp-techniek, gewichtsverdeling van de schijf optimaliseren, of een geleidingssysteem aan het lanceermechanisme toevoegen.</div></div>
     </div>
     </div>
   </div>
@@ -1269,7 +1350,7 @@
   <div class="panel" id="panel-landing">
     <div class="empty-state" id="landingEmpty" style="display:none;">
       <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="1"/><circle cx="15" cy="14" r="1"/><circle cx="12" cy="17" r="1"/>
+        <rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="9" cy="9" r="1"></circle><circle cx="15" cy="14" r="1"></circle><circle cx="12" cy="17" r="1"></circle>
       </svg>
       <div class="empty-state-title">Geen meetdata voor deze groep</div>
       <div>Voeg een meetreeks toe om de landing-posities en buis-statistieken te zien.</div>
@@ -1283,12 +1364,12 @@
         <button data-mode="both">Beide</button>
       </div>
       <label class="view-toggle">
-        <input type="checkbox" id="dualView" />
+        <input type="checkbox" id="dualView">
         <span>Tegenstander tonen (team vs team)</span>
       </label>
       <label class="tube-control">
         <span>Buis tussen platen:</span>
-        <input type="number" id="tubeLength" min="0" max="500" step="10" value="260" />
+        <input type="number" id="tubeLength" min="0" max="500" step="10" value="260">
         <span style="color:var(--muted);">mm</span>
       </label>
     </div>
@@ -1298,7 +1379,7 @@
         <h3 id="plateTitle">Speelvlak — bovenaanzicht</h3>
         <p class="desc" id="plateDesc">Sjoelbak 600 × 1840 mm. Sjoelsysteem bovenaan (werpkant), poortjes onderaan op het einde.</p>
         <div class="plate-wrap single" id="plateWrap"><canvas id="plateCanvas"></canvas></div>
-        <div class="axis-note">X &rarr; van links naar rechts &nbsp;·&nbsp; Y &rarr; afstand vóór de poortjes</div>
+        <div class="axis-note">X → van links naar rechts &nbsp;·&nbsp; Y → afstand vóór de poortjes</div>
         <div class="heat-legend" id="heatLegendBox" style="display:none;">
           <span>weinig</span><span class="heat-gradient"></span><span>veel</span>
         </div>
@@ -1331,57 +1412,69 @@
     </div>
   </div>
 
-  <div class="panel" id="panel-runs">
-    <div class="runs-top">
+  <div class="panel active" id="panel-runs">
+    <div class="runs-top editing">
       <div class="settings-section" id="runsManageBox">
         <h3>Runs beheren</h3>
         <p class="desc">Voeg een nieuwe meetreeks toe, kies welke actief is op het dashboard, of verwijder een run.</p>
-        <div id="runsList" style="margin-top:14px;"></div>
+        <div id="runsList" style="margin-top:14px;"><div class="runs-header"><span><b>1</b> van 1 runs geselecteerd · <b>100</b> metingen totaal</span><div class="runs-bulk"><button class="btn btn-xs" id="selectAllRuns">Alles selecteren</button><button class="btn btn-xs" id="selectNoneRuns">Niets</button></div></div><label class="run-item active"><div class="run-row-main"><input type="checkbox" class="run-check" data-idx="0" checked=""><div class="run-name">Run 1 <small>n=100</small></div><div class="run-actions"><button data-act="edit" data-idx="0">Bewerken</button><button class="danger" data-act="delete" data-idx="0">Verwijder</button></div></div></label></div>
 
-        <div class="save-warning">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px;">
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-          </svg>
-          <div>
-            <strong>Vergeet niet je gegevens te downloaden!</strong>
-            <p>Data wordt opgeslagen in je browser (localStorage), maar verdwijnt als je geschiedenis wist, een andere browser gebruikt of een ander apparaat opent. Klik <b>regelmatig op "Download als JSON"</b> om een backup-bestand te maken dat je later kunt importeren. Je kan ook eerst alles invullen in een Excel-bestand en daarna importeren.</p>
-          </div>
+        <div class="runs-action-row">
+          <button class="btn btn-primary-soft" id="newRunBtn">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Nieuwe run
+          </button>
+          <div class="action-divider"></div>
+          <button class="btn btn-with-icon" id="importBtn" title="Laad een eerder opgeslagen bestand">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            Bestand laden
+          </button>
+          <button class="btn btn-with-icon btn-save" id="saveBtnInline" title="Sla al je werk op als bestand op je computer">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span class="btn-save-label">
+              <span class="btn-save-title">Opslaan op pc</span>
+              <span class="btn-save-sub">zorg dat je data niet verloren gaat</span>
+            </span>
+            <span class="save-dot" id="saveDot" title="Klik regelmatig om je werk te beveiligen"></span>
+          </button>
+          <input type="file" id="importFile" accept=".json" style="display:none;">
         </div>
 
-        <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
-          <button class="btn" id="newRunBtn">+ Nieuwe run toevoegen</button>
-          <button class="btn btn-with-icon" id="importBtn">
-            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+        <div class="editor-data-warning" id="editorDataWarning" style="display: flex;">
+          <div class="edw-icon">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line>
             </svg>
-            Importeer JSON
-          </button>
-          <button class="btn btn-with-icon" id="saveBtnInline">
-            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
-            Download als JSON
-          </button>
-          <input type="file" id="importFile" accept=".json" style="display:none;" />
+          </div>
+          <div class="edw-body">
+            <strong>Data kan verloren gaan</strong>
+            <p>Klik op <b>Bewaren</b> om je run te bewaren. Voor een lange invoer: gebruik <b>Tussentijds opslaan</b> in de editor om een bestand te downloaden.</p>
+          </div>
         </div>
       </div>
 
-      <div class="settings-section" id="runEditorBox" style="display:none;">
-        <h3 id="runEditorTitle">Run bewerken</h3>
+      <div class="settings-section" id="runEditorBox" style="display: block;">
+        <h3 id="runEditorTitle">Nieuwe run toevoegen</h3>
         <div class="editor-lock-notice">
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
           </svg>
           <span>Tabs en groep-wissel zijn vergrendeld tijdens bewerking. Gebruik <b>Bewaren</b>, <b>Annuleren</b> of download een <b>backup</b> om verder te gaan.</span>
         </div>
         <div class="slider-row" style="grid-template-columns: 160px 1fr;">
           <label for="runNameInput">Naam</label>
-          <input type="text" id="runNameInput" class="num-input" style="width:auto;text-align:left;" />
+          <input type="text" id="runNameInput" class="num-input" style="width:auto;text-align:left;">
         </div>
         <div class="slider-row" style="grid-template-columns: 160px 1fr auto;">
           <label for="runRowCount">Aantal metingen</label>
-          <input type="number" id="runRowCount" class="num-input" min="1" max="500" step="1" value="15" />
+          <input type="number" id="runRowCount" class="num-input" min="1" max="500" step="1" value="15">
           <button class="btn" id="applyRowCount" style="font-size:12px;">Toepassen</button>
         </div>
         <div class="slider-row" style="grid-template-columns: 160px 1fr; align-items:flex-start; padding-top:10px;">
@@ -1395,23 +1488,28 @@
               <thead>
                 <tr><th>#</th><th>X (mm)</th><th>Y (mm)</th><th></th></tr>
               </thead>
-              <tbody id="runDataTable"></tbody>
+              <tbody id="runDataTable"><tr><td>1</td><td><input class="cell" data-row="0" data-col="x" value="" inputmode="decimal"></td><td><input class="cell" data-row="0" data-col="y" value="" inputmode="decimal"></td><td><button class="row-del" data-row="0" title="Verwijder rij">×</button></td></tr><tr><td>2</td><td><input class="cell" data-row="1" data-col="x" value="" inputmode="decimal"></td><td><input class="cell" data-row="1" data-col="y" value="" inputmode="decimal"></td><td><button class="row-del" data-row="1" title="Verwijder rij">×</button></td></tr><tr><td>3</td><td><input class="cell" data-row="2" data-col="x" value="" inputmode="decimal"></td><td><input class="cell" data-row="2" data-col="y" value="" inputmode="decimal"></td><td><button class="row-del" data-row="2" title="Verwijder rij">×</button></td></tr><tr><td>4</td><td><input class="cell" data-row="3" data-col="x" value="" inputmode="decimal"></td><td><input class="cell" data-row="3" data-col="y" value="" inputmode="decimal"></td><td><button class="row-del" data-row="3" title="Verwijder rij">×</button></td></tr><tr><td>5</td><td><input class="cell" data-row="4" data-col="x" value="" inputmode="decimal"></td><td><input class="cell" data-row="4" data-col="y" value="" inputmode="decimal"></td><td><button class="row-del" data-row="4" title="Verwijder rij">×</button></td></tr><tr><td>6</td><td><input class="cell" data-row="5" data-col="x" value="" inputmode="decimal"></td><td><input class="cell" data-row="5" data-col="y" value="" inputmode="decimal"></td><td><button class="row-del" data-row="5" title="Verwijder rij">×</button></td></tr><tr><td>7</td><td><input class="cell" data-row="6" data-col="x" value="" inputmode="decimal"></td><td><input class="cell" data-row="6" data-col="y" value="" inputmode="decimal"></td><td><button class="row-del" data-row="6" title="Verwijder rij">×</button></td></tr><tr><td>8</td><td><input class="cell" data-row="7" data-col="x" value="" inputmode="decimal"></td><td><input class="cell" data-row="7" data-col="y" value="" inputmode="decimal"></td><td><button class="row-del" data-row="7" title="Verwijder rij">×</button></td></tr><tr><td>9</td><td><input class="cell" data-row="8" data-col="x" value="" inputmode="decimal"></td><td><input class="cell" data-row="8" data-col="y" value="" inputmode="decimal"></td><td><button class="row-del" data-row="8" title="Verwijder rij">×</button></td></tr><tr><td>10</td><td><input class="cell" data-row="9" data-col="x" value="" inputmode="decimal"></td><td><input class="cell" data-row="9" data-col="y" value="" inputmode="decimal"></td><td><button class="row-del" data-row="9" title="Verwijder rij">×</button></td></tr><tr><td>11</td><td><input class="cell" data-row="10" data-col="x" value="" inputmode="decimal"></td><td><input class="cell" data-row="10" data-col="y" value="" inputmode="decimal"></td><td><button class="row-del" data-row="10" title="Verwijder rij">×</button></td></tr><tr><td>12</td><td><input class="cell" data-row="11" data-col="x" value="" inputmode="decimal"></td><td><input class="cell" data-row="11" data-col="y" value="" inputmode="decimal"></td><td><button class="row-del" data-row="11" title="Verwijder rij">×</button></td></tr><tr><td>13</td><td><input class="cell" data-row="12" data-col="x" value="" inputmode="decimal"></td><td><input class="cell" data-row="12" data-col="y" value="" inputmode="decimal"></td><td><button class="row-del" data-row="12" title="Verwijder rij">×</button></td></tr><tr><td>14</td><td><input class="cell" data-row="13" data-col="x" value="" inputmode="decimal"></td><td><input class="cell" data-row="13" data-col="y" value="" inputmode="decimal"></td><td><button class="row-del" data-row="13" title="Verwijder rij">×</button></td></tr><tr><td>15</td><td><input class="cell" data-row="14" data-col="x" value="" inputmode="decimal"></td><td><input class="cell" data-row="14" data-col="y" value="" inputmode="decimal"></td><td><button class="row-del" data-row="14" title="Verwijder rij">×</button></td></tr></tbody>
             </table>
           </div>
-          <p class="desc" id="runDataStatus" style="margin-top:6px;">—</p>
+          <p class="desc" id="runDataStatus" style="margin-top:6px;">Nog geen data ingevuld.</p>
         </div>
         <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-          <button class="btn" id="saveRunBtn" style="border-color:var(--accent);color:var(--accent);">Bewaren</button>
-          <button class="btn" id="cancelRunBtn">Annuleren</button>
-          <button class="btn btn-with-icon" id="backupDraftBtn" title="Download een JSON-backup van je huidige invoer — ook onvolledige rijen worden meegenomen. Importeer later met 'Importeer JSON' om verder te werken.">
-            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+          <button class="btn btn-primary-soft" id="saveRunBtn">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
             </svg>
-            Backup downloaden
+            Bewaren
+          </button>
+          <button class="btn" id="cancelRunBtn">Annuleren</button>
+          <button class="btn btn-with-icon" id="backupDraftBtn" title="Bewaar deze run-bewerking als bestand op je computer (ook half ingevulde rijen). Je kan dit later terugladen of doorsturen.">
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Tussentijds opslaan
           </button>
           <span class="autosave-indicator" id="autosaveIndicator" title="Wijzigingen worden automatisch tijdelijk opgeslagen — bij refresh kun je verder waar je was.">
             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="20 6 9 17 4 12"/>
+              <polyline points="20 6 9 17 4 12"></polyline>
             </svg>
             <span class="autosave-text">Auto-opgeslagen</span>
           </span>
@@ -1433,13 +1531,13 @@
       </div>
       <div class="compare-table-wrap">
         <div class="compare-table-scroll">
-          <table class="compare-table" id="compareTable"></table>
+          <table class="compare-table" id="compareTable"><thead><tr><th data-tip="Naam van de meetreeks. Een blauwe stip betekent dat deze run actief is op het Dashboard.">Run</th><th data-tip="Aantal metingen in deze run">n</th><th data-tip="Gemiddelde X-positie van alle worpen (in mm vanaf de linkerrand). Ideaal ligt dit op het midden van de poortenrij.">μ X</th><th data-tip="Standaardafwijking in X-richting. Hoe lager, hoe consistenter de worp links-rechts.">σ X</th><th class="group-sep" data-tip="Gemiddelde Y-positie. Negatieve waarden betekenen dat schijven gemiddeld door de poortjes zijn gegaan.">μ Y</th><th data-tip="Standaardafwijking in Y-richting. Een grote σ Y betekent dat de afgelegde afstand sterk varieert.">σ Y</th><th class="group-sep" data-tip="Aantal schijven die voorbij de poortjeslijn zijn (Y &lt; 0). Elke zo&#39;n schijf wordt toegekend aan de dichtstbijzijnde poort.">Door poort</th><th data-tip="Percentage geslaagde worpen ten opzichte van het totaal aantal metingen.">Slaagkans</th><th class="group-sep" data-tip="Totale score volgens de PES 2026 puntentelling (poorten 2-5-3-1-4) op basis van de huidige poortconfiguratie.">Score</th><th data-tip="Gemiddeld aantal punten per worp. Dit is een goede indicator van de algemene prestatie.">Pt / worp</th></tr></thead><tbody><tr class=""><td><span class="run-dot "></span>Run 1</td><td class="col-muted">100</td><td>306 <span class="col-muted">mm</span></td><td class="">38.1</td><td class="group-sep">77 <span class="col-muted">mm</span></td><td class="">339.0</td><td class="group-sep ">20 <span class="col-muted">/ 100</span></td><td class="">20%</td><td class="group-sep col-score ">58</td><td class="">0.58</td></tr></tbody></table>
         </div>
       </div>
       <div class="compare-legend">
         <span class="legend-hint">
           <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;">
-            <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+            <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>
           </svg>
           Beweeg over de kolomtitels voor uitleg.
         </span>
@@ -1457,9 +1555,9 @@
           </div>
         </div>
         <div class="compare-chart-wrap">
-          <canvas id="compareGaussCanvas"></canvas>
+          <canvas id="compareGaussCanvas" style="box-sizing: border-box; display: block; height: 280px; width: 1052px;" width="1052" height="280"></canvas>
         </div>
-        <div class="compare-chart-legend" id="compareGaussLegend"></div>
+        <div class="compare-chart-legend" id="compareGaussLegend"><span class="chip"><span class="chip-swatch" style="background:#3b82f6;"></span>Run 1 <span class="chip-stats">μ=306 σ=38.1</span></span></div>
       </div>
     </div>
   </div>
@@ -1471,7 +1569,7 @@
         <p class="desc">Vanaf welke hoek van de schijf zijn de coördinaten gemeten?</p>
         <div style="margin-top:10px;">
           <select id="measRef" class="full-select">
-            <option value="tl" selected>Linkerbovenhoek (vanuit werper-perspectief)</option>
+            <option value="tl" selected="">Linkerbovenhoek (vanuit werper-perspectief)</option>
             <option value="tr">Rechterbovenhoek</option>
             <option value="bl">Linkeronderhoek</option>
             <option value="br">Rechteronderhoek</option>
@@ -1484,9 +1582,9 @@
       <div class="settings-section" style="grid-column: 1 / -1;">
         <h3>Poortjes &amp; schijf</h3>
         <p class="desc">Pas de geometrie van het sjoel-spel aan. Standaard volgt de PES 2026-opdracht.</p>
-        <div id="globalSliders" style="margin-top:8px;"></div>
+        <div id="globalSliders" style="margin-top:8px;"><div class="slider-row"><label for="g_numGates_input">Aantal poortjes</label><input type="range" id="g_numGates_range" min="1" max="9" step="1" value="5"><input type="number" class="num-input" id="g_numGates_input" min="1" max="9" step="1" value="5"><button class="reset-btn" data-key="numGates" title="Reset naar 5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg></button></div><div class="slider-row"><label for="g_gateW_input">Poortbreedte</label><input type="range" id="g_gateW_range" min="40" max="200" step="1" value="80"><input type="number" class="num-input" id="g_gateW_input" min="40" max="200" step="1" value="80"><button class="reset-btn" data-key="gateW" title="Reset naar 80mm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg></button></div><div class="slider-row"><label for="g_gateGap_input">Muurdikte</label><input type="range" id="g_gateGap_range" min="0" max="100" step="1" value="20"><input type="number" class="num-input" id="g_gateGap_input" min="0" max="100" step="1" value="20"><button class="reset-btn" data-key="gateGap" title="Reset naar 20mm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg></button></div><div class="slider-row"><label for="g_diskD_input">Schijfdiameter</label><input type="range" id="g_diskD_range" min="20" max="100" step="1" value="52"><input type="number" class="num-input" id="g_diskD_input" min="20" max="100" step="1" value="52"><button class="reset-btn" data-key="diskD" title="Reset naar 52mm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg></button></div><div class="slider-row"><label for="g_gateOffset_input">Centrum-offset (vs midden plate)</label><input type="range" id="g_gateOffset_range" min="-200" max="200" step="1" value="0"><input type="number" class="num-input" id="g_gateOffset_input" min="-200" max="200" step="1" value="0"><button class="reset-btn" data-key="gateOffset" title="Reset naar 0mm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg></button></div></div>
         <div class="dim-diagram" style="margin-top:12px;">
-          <svg id="dimSvg" viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg"></svg>
+          <svg id="dimSvg" viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg"><rect class="dim-wall" x="24" y="56" width="16" height="120.44444444444444" stroke-width="0.8"></rect><rect class="dim-wall" x="360" y="56" width="16" height="120.44444444444444" stroke-width="0.8"></rect><rect class="dim-wall" x="182.22222222222223" y="56" width="35.55555555555554" height="120.44444444444444" stroke-width="0.8"></rect><rect class="dim-margin" x="86.22222222222223" y="56" width="49.77777777777777" height="120.44444444444444"></rect><circle cx="111.11111111111111" cy="116.22222222222223" r="46.22222222222222" fill="rgba(220,38,38,0.15)" stroke="var(--danger)" stroke-width="1.4"></circle><line class="dim-stroke" x1="40" y1="30" x2="182.22222222222223" y2="30" stroke-width="0.7"></line><line class="dim-stroke" x1="40" y1="25" x2="40" y2="35" stroke-width="0.7"></line><line class="dim-stroke" x1="182.22222222222223" y1="25" x2="182.22222222222223" y2="35" stroke-width="0.7"></line><rect x="90.86111111111111" y="22" width="40.5" height="14" fill="var(--bg-soft)" rx="2"></rect><text class="dim-text-val" x="111.11111111111111" y="33" text-anchor="middle">80 mm</text><line class="dim-stroke" x1="182.22222222222223" y1="30" x2="217.77777777777777" y2="30" stroke-width="0.7"></line><line class="dim-stroke" x1="182.22222222222223" y1="25" x2="182.22222222222223" y2="35" stroke-width="0.7"></line><line class="dim-stroke" x1="217.77777777777777" y1="25" x2="217.77777777777777" y2="35" stroke-width="0.7"></line><rect x="179.75" y="22" width="40.5" height="14" fill="var(--bg-soft)" rx="2"></rect><text class="dim-text-val" x="200" y="33" text-anchor="middle">20 mm</text><text class="dim-label" x="111.11111111111111" y="14" text-anchor="middle">poort</text><text class="dim-label" x="200" y="14" text-anchor="middle">muur</text><line class="dim-stroke" x1="64.88888888888889" y1="200.44444444444446" x2="157.33333333333334" y2="200.44444444444446" stroke-width="0.7"></line><line class="dim-stroke" x1="64.88888888888889" y1="195.44444444444446" x2="64.88888888888889" y2="205.44444444444446" stroke-width="0.7"></line><line class="dim-stroke" x1="157.33333333333334" y1="195.44444444444446" x2="157.33333333333334" y2="205.44444444444446" stroke-width="0.7"></line><rect x="87.61111111111111" y="192.44444444444446" width="47" height="14" fill="var(--bg-soft)" rx="2"></rect><text class="dim-text-val" x="111.11111111111111" y="203.44444444444446" text-anchor="middle">Ø52 mm</text><text x="111.11111111111111" y="218.44444444444446" text-anchor="middle" class="dim-margin-label">marge ±14 mm</text></svg>
         </div>
       </div>
 
@@ -1498,12 +1596,12 @@
           </div>
           <button class="btn reset-action-btn" id="resetAllBtn">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;vertical-align:-2px;">
-              <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+              <polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
             </svg>
             Reset alles
           </button>
         </div>
-        <div class="reset-values" id="resetValues"></div>
+        <div class="reset-values" id="resetValues"><div class="reset-row"><div class="reset-label">Meetpunt</div><div class="reset-current">Linksboven</div><div class="reset-default">op standaardwaarde</div></div><div class="reset-row"><div class="reset-label">Aantal poortjes</div><div class="reset-current">5</div><div class="reset-default">op standaardwaarde</div></div><div class="reset-row"><div class="reset-label">Poortbreedte</div><div class="reset-current">80 mm</div><div class="reset-default">op standaardwaarde</div></div><div class="reset-row"><div class="reset-label">Muurdikte</div><div class="reset-current">20 mm</div><div class="reset-default">op standaardwaarde</div></div><div class="reset-row"><div class="reset-label">Schijfdiameter</div><div class="reset-current">52 mm</div><div class="reset-default">op standaardwaarde</div></div><div class="reset-row"><div class="reset-label">Centrum-offset (vs midden plate)</div><div class="reset-current">0 mm</div><div class="reset-default">op standaardwaarde</div></div></div>
       </div>
     </div>
   </div>
@@ -1537,7 +1635,7 @@
 
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="./index_files/chart.umd.js.download"></script>
 <script>
 let rawRuns = [
   { label: 'Run 1',
@@ -1597,6 +1695,9 @@ function saveCurrentToGroup() {
   groups[activeGroup].measRef = measRef;
   groups[activeGroup].tubeLength = tubeLength;
   persistGroups();
+  // Mark that there's unsaved work (we changed state since last export)
+  try { localStorage.removeItem('sjoel-last-export'); } catch(e) {}
+  if (typeof updateSaveDot === 'function') updateSaveDot();
 }
 
 function loadFromGroup(key) {
@@ -2919,20 +3020,25 @@ function isEditorOpen() {
   return box && box.style.display !== 'none';
 }
 
-function editorHasContent() {
+function editorHasData() {
+  // True only if there are actual X/Y values typed. Empty name + empty rows = nothing to lose.
   if (!isEditorOpen()) return false;
-  if (editorRows.some(r => (r.x && r.x !== '') || (r.y && r.y !== ''))) return true;
-  const name = document.getElementById('runNameInput');
+  return editorRows.some(r => (r.x && r.x !== '') || (r.y && r.y !== ''));
+}
+
+function editorHasContent() {
+  // Broader check: any field has been touched (used for tab/group lock)
+  if (!isEditorOpen()) return false;
+  if (editorHasData()) return true;
   const notes = document.getElementById('runNotesInput');
-  if (name && name.value.trim()) return true;
   if (notes && notes.value.trim()) return true;
   return false;
 }
 
 document.querySelectorAll('.tab').forEach(t => {
   t.addEventListener('click', (e) => {
-    // Block tab switch if editor is open with unsaved content
-    if (isEditorOpen() && editorHasContent()) {
+    // Block tab switch if editor has actual data (not just an empty form)
+    if (isEditorOpen() && editorHasData()) {
       const targetTab = t.dataset.tab;
       // If they're already on Runs and clicking Runs again, do nothing special
       if (targetTab !== 'runs') {
@@ -3024,7 +3130,7 @@ function renderRunsList() {
         '</div>' +
         '<div class="run-actions">' +
           '<button data-act="edit" data-idx="' + i + '">Bewerken</button>' +
-          (rawRuns.length > 1 ? '<button class="danger" data-act="delete" data-idx="' + i + '">Verwijder</button>' : '') +
+          '<button class="danger" data-act="delete" data-idx="' + i + '">Verwijder</button>' +
         '</div>' +
       '</div>' +
       notes +
@@ -3058,7 +3164,11 @@ function renderRunsList() {
       if (act === 'edit') {
         openRunEditor(idx);
       } else if (act === 'delete') {
-        if (!confirm('Run "' + rawRuns[idx].label + '" verwijderen?')) return;
+        const isLast = rawRuns.length === 1;
+        const msg = isLast
+          ? 'Dit is de laatste run in deze groep. Verwijderen betekent dat de groep helemaal leeg wordt.\n\nRun "' + rawRuns[idx].label + '" definitief verwijderen?'
+          : 'Run "' + rawRuns[idx].label + '" verwijderen?';
+        if (!confirm(msg)) return;
         rawRuns.splice(idx, 1);
         // Rebuild selection: shift indices and drop the deleted one
         const newSel = new Set();
@@ -3070,7 +3180,8 @@ function renderRunsList() {
         if (selectedRuns.size === 0 && rawRuns.length) selectedRuns.add(0);
         renderRunsList();
         onSelectionChange();
-        showToast('Run verwijderd');
+        saveCurrentToGroup();
+        showToast(isLast ? 'Run verwijderd — groep is nu leeg' : 'Run verwijderd');
       }
     });
   });
@@ -3601,6 +3712,8 @@ function openRunEditor(idx) {
   const editor = document.getElementById('runEditorBox');
   editor.style.display = 'block';
   document.querySelector('.runs-top').classList.add('editing');
+  const warn = document.getElementById('editorDataWarning');
+  if (warn) warn.style.display = 'flex';
   if (idx === null) {
     document.getElementById('runEditorTitle').textContent = 'Nieuwe run toevoegen';
     document.getElementById('runNameInput').value = 'Run ' + (rawRuns.length + 1);
@@ -3623,18 +3736,20 @@ function openRunEditor(idx) {
 function closeRunEditor() {
   document.getElementById('runEditorBox').style.display = 'none';
   document.querySelector('.runs-top').classList.remove('editing');
+  const warn = document.getElementById('editorDataWarning');
+  if (warn) warn.style.display = 'none';
   editingRunIndex = null;
   clearEditorDraft();
 }
 
 document.getElementById('newRunBtn').addEventListener('click', () => openRunEditor(null));
 document.getElementById('cancelRunBtn').addEventListener('click', () => {
-  if (editorHasContent()) {
+  if (editorHasData()) {
     const msg = '⚠ Je hebt niet-opgeslagen gegevens.\n\n' +
                 'Annuleren betekent dat ALLES weg is:\n' +
                 '• Naam, notities en alle X/Y waardes\n' +
                 '• Ook de auto-save draft wordt gewist\n\n' +
-                'Tip: gebruik "Backup downloaden" hieronder om eerst een JSON-bestand op te slaan.\n\n' +
+                'Tip: gebruik "Tussentijds opslaan" hieronder om eerst een bestand op te slaan.\n\n' +
                 'Echt annuleren?';
     if (!confirm(msg)) return;
   }
@@ -3761,7 +3876,37 @@ document.getElementById('saveBtn').addEventListener('click', () => {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
   showToast('Bestand gedownload');
+  markSaved();
 });
+
+// Pulsing save-dot management: orange = unsaved changes, green = recently saved, hidden if nothing to save
+function updateSaveDot() {
+  const dot = document.getElementById('saveDot');
+  if (!dot) return;
+  const hasRuns = (groups.A.rawRuns.length + groups.B.rawRuns.length) > 0;
+  if (!hasRuns) {
+    dot.style.display = 'none';
+    return;
+  }
+  dot.style.display = '';
+  // The 'muted' class shows it green and non-pulsing
+  // Cleared only after explicit save (markSaved sets a flag with timestamp)
+  const lastSave = parseInt(localStorage.getItem('sjoel-last-export') || '0', 10);
+  const ageMs = Date.now() - lastSave;
+  // Within 30 seconds of a save → green non-pulsing
+  // Otherwise → orange pulsing reminder
+  if (lastSave > 0 && ageMs < 30000) {
+    dot.classList.add('muted');
+  } else {
+    dot.classList.remove('muted');
+  }
+}
+function markSaved() {
+  localStorage.setItem('sjoel-last-export', String(Date.now()));
+  updateSaveDot();
+  // Re-evaluate after 30s so the dot turns orange again
+  setTimeout(updateSaveDot, 30100);
+}
 
 document.getElementById('importBtn').addEventListener('click', () => {
   document.getElementById('importFile').click();
@@ -3934,8 +4079,8 @@ document.querySelectorAll('#groupSwitcher button').forEach(btn => {
   btn.addEventListener('click', () => {
     const target = btn.dataset.group;
     if (target === activeGroup) return;
-    // Block group switch if editor has unsaved content (would lose the draft on switch)
-    if (isEditorOpen() && editorHasContent()) {
+    // Block group switch if editor has actual data (not just an empty form)
+    if (isEditorOpen() && editorHasData()) {
       showToast('⚠ Bewaar of annuleer eerst je openstaande run-bewerking');
       const editorBox = document.getElementById('runEditorBox');
       if (editorBox) {
@@ -3974,9 +4119,11 @@ renderRunsList();
 renderResetValues();
 renderCompareTable();
 refreshGroupUI();
+updateSaveDot();
 
 // Check for unsaved editor draft from a previous session — offer to restore
 setTimeout(() => tryRestoreEditorDraft(), 300);
 </script>
-</body>
-</html>
+
+
+</body></html>
