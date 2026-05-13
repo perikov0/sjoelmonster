@@ -158,6 +158,36 @@
     border-radius: 6px; padding: 5px 12px; font-size: 12.5px;
     cursor: pointer; color: var(--text); font-family: inherit;
   }
+  .save-warning {
+    margin-top: 18px;
+    padding: 12px 16px;
+    background: rgba(245,158,11,0.08);
+    border: 1px solid rgba(245,158,11,0.35);
+    border-left: 3px solid #f59e0b;
+    border-radius: 6px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    color: var(--text);
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+  .save-warning svg { color: #f59e0b; }
+  .save-warning strong {
+    display: block;
+    color: #f59e0b;
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+  .save-warning p {
+    margin: 0;
+    color: var(--muted);
+  }
+  .save-warning p b {
+    color: var(--text);
+    font-weight: 500;
+  }
   .btn:hover { background: var(--hover); }
   .btn.active { border-color: var(--text); }
   .btn-with-icon {
@@ -225,6 +255,10 @@
     transition: opacity 0.15s ease;
     pointer-events: none;
     z-index: 30;
+  }
+  .stat-label[data-tip]:hover::after,
+  .stat-label[data-tip]:hover::before {
+    opacity: 1;
   }
   .target-prob-card {
     margin-top: 24px;
@@ -748,17 +782,16 @@
     position: relative;
   }
   .compare-table-scroll {
-    overflow-x: auto;
     border-radius: 8px;
   }
   .compare-table {
-    width: 100%; border-collapse: collapse; font-size: 13px;
-    min-width: 720px;
+    width: 100%; border-collapse: collapse; font-size: 12.5px;
+    table-layout: auto;
   }
   .compare-table thead th {
-    padding: 11px 12px 10px;
+    padding: 11px 8px 10px;
     font-weight: 500; color: var(--muted);
-    font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em;
+    font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em;
     border-bottom: 1px solid var(--line-strong);
     white-space: nowrap;
     background: var(--bg-soft);
@@ -772,7 +805,7 @@
     border-left: 1px solid var(--line);
   }
   .compare-table tbody td {
-    padding: 11px 12px;
+    padding: 11px 8px;
     text-align: right;
     border-bottom: 1px solid var(--line);
     font-variant-numeric: tabular-nums;
@@ -1123,8 +1156,8 @@
       Groep:
     </div>
     <div class="group-switcher" id="groupSwitcher">
-      <button class="active" data-group="A"><span class="group-dot" style="background:#3b82f6;"></span>Groep 1 (Sjoelmonster)</button>
-      <button data-group="B"><span class="group-dot" style="background:#10b981;"></span>Groep 2 (Pea Shooter)</button>
+      <button class="active" data-group="A"><span class="group-dot" style="background:#3b82f6;"></span>Groep 2 (Sjoelmonster)</button>
+      <button data-group="B"><span class="group-dot" style="background:#10b981;"></span>Groep 1 (Pea Shooter)</button>
     </div>
     <div class="group-members" id="groupMembers">
       <span class="group-members-label">Leden:</span>
@@ -1160,6 +1193,8 @@
       <span><span class="sw" style="background:var(--accent-soft-2)"></span>±2σ — 95%</span>
       <span><span class="sw" style="background:var(--accent-soft-1)"></span>±3σ — 99.7%</span>
       <span><span class="sw" style="background:var(--accent)"></span>Verdeling</span>
+      <span class="legend-gate-entry"><span class="sw" style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.7);"></span>Poortje (80 mm)</span>
+      <span class="legend-gate-entry"><span class="sw" style="background:rgba(16,185,129,0.22);border:1px dashed rgba(16,185,129,0.5);"></span>Score-zone schijfmidden</span>
     </div>
     <div class="chart-wrap"><canvas id="gc"></canvas></div>
     <h2 class="gate-title">Poortkans per poortje</h2>
@@ -1267,6 +1302,18 @@
         <h3>Runs beheren</h3>
         <p class="desc">Voeg een nieuwe meetreeks toe, kies welke actief is op het dashboard, of verwijder een run.</p>
         <div id="runsList" style="margin-top:14px;"></div>
+
+        <div class="save-warning">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px;">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          <div>
+            <strong>Vergeet niet je gegevens te downloaden!</strong>
+            <p>Data wordt opgeslagen in je browser (localStorage), maar verdwijnt als je geschiedenis wist, een andere browser gebruikt of een ander apparaat opent. Klik <b>regelmatig op "Download als JSON"</b> om een backup-bestand te maken dat je later kunt importeren. Je kan ook eerst alles invullen in een Excel-bestand en daarna importeren.</p>
+          </div>
+        </div>
+
         <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
           <button class="btn" id="newRunBtn">+ Nieuwe run toevoegen</button>
           <button class="btn btn-with-icon" id="importBtn">
@@ -1484,8 +1531,8 @@ function makeFreshGroupState(name, defaultRuns, defaultSelected) {
   };
 }
 let groups = {
-  A: makeFreshGroupState('Groep 1 (Sjoelmonster)', DEFAULT_RUNS_SJOELMONSTER, [0]),
-  B: makeFreshGroupState('Groep 2 (Pea Shooter)', DEFAULT_RUNS_PEASHOOTER, [])
+  A: makeFreshGroupState('Groep 2 (Sjoelmonster)', DEFAULT_RUNS_SJOELMONSTER, [0]),
+  B: makeFreshGroupState('Groep 1 (Pea Shooter)', DEFAULT_RUNS_PEASHOOTER, [])
 };
 let activeGroup = 'A';
 
@@ -1513,7 +1560,7 @@ function loadFromGroup(key) {
 
 function persistGroups() {
   try {
-    localStorage.setItem('sjoel-groups', JSON.stringify({ version: 4, groups, activeGroup }));
+    localStorage.setItem('sjoel-groups', JSON.stringify({ version: 5, groups, activeGroup }));
   } catch(e) { /* localStorage may be unavailable */ }
 }
 
@@ -1522,7 +1569,7 @@ function restoreGroupsFromStorage() {
     const raw = localStorage.getItem('sjoel-groups');
     if (!raw) return false;
     const data = JSON.parse(raw);
-    if (!data.version || data.version < 4) {
+    if (!data.version || data.version < 5) {
       localStorage.removeItem('sjoel-groups');
       return false;
     }
@@ -1602,7 +1649,7 @@ const sliderDefs = [
   { key: 'gateW', label: 'Poortbreedte', min: 40, max: 200, step: 1, unit: 'mm' },
   { key: 'gateGap', label: 'Muurdikte', min: 0, max: 100, step: 1, unit: 'mm' },
   { key: 'diskD', label: 'Schijfdiameter', min: 20, max: 100, step: 1, unit: 'mm' },
-  { key: 'gateOffset', label: 'Centrum-offset (vs μ)', min: -200, max: 200, step: 1, unit: 'mm' }
+  { key: 'gateOffset', label: 'Centrum-offset (vs midden plate)', min: -200, max: 200, step: 1, unit: 'mm' }
 ];
 
 const RESET_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>';
@@ -1755,6 +1802,95 @@ function renderChart() {
   const textColor = cssVar('--text') || '#1a1a1a';
 
   if (chart) chart.destroy();
+
+  // Plugin: draw gates with two visual layers behind the gauss curve.
+  // Outer band  = physical gate width (W mm, e.g. 80mm) — shows where the opening is.
+  // Inner band  = scoring zone for the disk centre (W - D mm wide, e.g. 28mm) — where
+  //               the disk's midpoint must land for it to pass through (accounts for radius).
+  // Only on the X-axis (gates are an X-position phenomenon).
+  const gatesPlugin = {
+    id: 'gateBands',
+    beforeDatasetsDraw(chartInstance) {
+      if (currentAxis !== 'x') return;
+      const { numGates: n, gateW: W, gateGap: gap, diskD: D, gateOffset: offset } = settings;
+      const margin = (W - D) / 2;  // half-width of the disk-centre scoring zone
+      if (n <= 0) return;
+      const center = PLATE_W / 2 + offset;
+      const { centers } = gateCenters(n, W, gap, center);
+      const scores = gateScores(n);
+      const ctx = chartInstance.ctx;
+      const xScale = chartInstance.scales.x;
+      const yScale = chartInstance.scales.y;
+      const chartTop = yScale.top;
+      const chartBottom = yScale.bottom;
+
+      const xToPixel = (dataX) => {
+        if (dataX <= lo) return xScale.left;
+        if (dataX >= hi) return xScale.right;
+        const frac = (dataX - lo) / (hi - lo);
+        return xScale.left + frac * (xScale.right - xScale.left);
+      };
+
+      ctx.save();
+      centers.forEach((c, i) => {
+        // Physical gate boundaries (the actual opening, W mm wide)
+        const gateLeft = c - W / 2, gateRight = c + W / 2;
+        // Scoring zone for disk centre (margin = (W - D) / 2 on each side of centre)
+        const scoreLeft = c - margin, scoreRight = c + margin;
+
+        // Skip if entirely outside visible range
+        if (gateRight < lo || gateLeft > hi) return;
+
+        const xGateL = xToPixel(gateLeft);
+        const xGateR = xToPixel(gateRight);
+
+        // OUTER: physical gate width — light fill + solid edges representing the walls
+        ctx.fillStyle = 'rgba(16,185,129,0.06)';
+        ctx.fillRect(xGateL, chartTop, xGateR - xGateL, chartBottom - chartTop);
+        // Solid green vertical lines = the physical walls of this poortje
+        ctx.strokeStyle = 'rgba(16,185,129,0.7)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(xGateL + 0.5, chartTop);
+        ctx.lineTo(xGateL + 0.5, chartBottom);
+        ctx.moveTo(xGateR - 0.5, chartTop);
+        ctx.lineTo(xGateR - 0.5, chartBottom);
+        ctx.stroke();
+
+        // INNER: scoring zone for disk centre (darker fill, no edges)
+        if (margin > 0) {
+          const xScoreL = xToPixel(scoreLeft);
+          const xScoreR = xToPixel(scoreRight);
+          ctx.fillStyle = 'rgba(16,185,129,0.22)';
+          ctx.fillRect(xScoreL, chartTop, xScoreR - xScoreL, chartBottom - chartTop);
+          // Dashed inner boundaries to mark where the disk-centre must land
+          ctx.strokeStyle = 'rgba(16,185,129,0.5)';
+          ctx.lineWidth = 1;
+          ctx.setLineDash([3, 3]);
+          ctx.beginPath();
+          ctx.moveTo(xScoreL + 0.5, chartTop);
+          ctx.lineTo(xScoreL + 0.5, chartBottom);
+          ctx.moveTo(xScoreR - 0.5, chartTop);
+          ctx.lineTo(xScoreR - 0.5, chartBottom);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+
+        // Score label and "poort i" label at top
+        const labelX = (xGateL + xGateR) / 2;
+        const labelY = chartTop + 14;
+        ctx.fillStyle = '#10b981';
+        ctx.font = '600 11px -apple-system, system-ui';
+        ctx.textAlign = 'center';
+        ctx.fillText(scores[i], labelX, labelY);
+        ctx.fillStyle = 'rgba(16,185,129,0.7)';
+        ctx.font = '500 9px -apple-system, system-ui';
+        ctx.fillText('poort ' + (i+1), labelX, labelY + 11);
+      });
+      ctx.restore();
+    }
+  };
+
   chart = new Chart(document.getElementById('gc'), {
     type: 'line',
     data: {
@@ -1766,6 +1902,7 @@ function renderChart() {
         { data: ys, fill:false, borderColor:accentColor, borderWidth:2, pointRadius:0, tension:0.35 }
       ]
     },
+    plugins: [gatesPlugin],
     options: {
       responsive:true, maintainAspectRatio:false,
       interaction:{ mode:'index', intersect:false },
@@ -1821,7 +1958,9 @@ function renderGate() {
   if (xdata.length === 0) return; // skip safely when no data; the dashboard empty state handles UI
   const mu = mean(xdata), sigma = std(xdata);
   const { numGates: n, gateW: W, gateGap: gap, diskD: D, gateOffset: offset } = settings;
-  const center = mu + offset;
+  // The gates are physically fixed in the sjoelbak, centered around the middle of the plate.
+  // gateOffset lets the user shift the row left/right if it's not perfectly centered.
+  const center = PLATE_W / 2 + offset;
   const margin = (W - D) / 2;
   const { centers, totalW } = gateCenters(n, W, gap, center);
 
@@ -1942,7 +2081,7 @@ function probabilityForRun(mu, sigma, settings) {
   const { numGates: n, gateW: W, gateGap: gap, diskD: D, gateOffset: offset } = settings;
   const margin = (W - D) / 2;
   if (margin <= 0 || sigma <= 0) return 0;
-  const center = mu + offset;
+  const center = PLATE_W / 2 + offset;
   const { centers } = gateCenters(n, W, gap, center);
   let p = 0;
   for (const c of centers) p += probInRange(c - margin, c + margin, mu, sigma);
@@ -2110,9 +2249,11 @@ function dimLine(x1, y, x2, y2, label) {
 function computeLandingProb(pts) {
   const xs = pts.map(p=>p.x);
   const mu = mean(xs), sigma = std(xs);
-  const { numGates: n, gateW: W, gateGap: gap, diskD: D } = settings;
+  const { numGates: n, gateW: W, gateGap: gap, diskD: D, gateOffset: offset } = settings;
   const margin = (W - D) / 2;
-  const { centers, start, end } = gateCenters(n, W, gap, mu);
+  // Gates are physically positioned around the centre of the plate.
+  const center = PLATE_W / 2 + offset;
+  const { centers, start, end } = gateCenters(n, W, gap, center);
   let prob = 0;
   if (margin > 0) centers.forEach(c => prob += probInRange(c - margin, c + margin, mu, sigma));
   document.getElementById('landingProb').textContent = (prob*100).toFixed(1);
@@ -2740,6 +2881,10 @@ document.querySelectorAll('#axisCtl .btn').forEach(b => {
     document.querySelectorAll('#axisCtl .btn').forEach(x => x.classList.remove('active'));
     b.classList.add('active');
     currentAxis = b.dataset.axis;
+    // Show/hide gate legend entry
+    document.querySelectorAll('.legend-gate-entry').forEach(el => {
+      el.style.display = currentAxis === 'x' ? '' : 'none';
+    });
     renderChart();
   });
 });
@@ -2903,7 +3048,8 @@ function renderCompareTable() {
     const muX = mean(xs), sX = std(xs);
     const muY = mean(ys), sY = std(ys);
     // Score using nearest gate (consistent with computeLandingProb empirical method)
-    const center = muX;
+    const gateOffset = settings.gateOffset || 0;
+    const center = PLATE_W / 2 + gateOffset;
     const { centers } = gateCenters(n, W, gap, center);
     let scored = 0, totalScore = 0;
     for (let k = 0; k < ys.length; k++) {
