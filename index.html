@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0049)file:///C:/Users/grays/Downloads/sjoel_v42_2.html -->
+<!-- saved from url=(0043)file:///C:/Users/grays/Downloads/index.html -->
 <html lang="nl"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1240,7 +1240,7 @@
 </style>
 </head>
 <body data-theme="dark">
-<div class="toast" id="toast">↻ Niet-bewaarde wijzigingen hersteld (0 rijen, zojuist)</div>
+<div class="toast" id="toast">↻ Niet-bewaarde wijzigingen hersteld (0 rijen, 3 minuten geleden)</div>
 <div class="wrap">
 
   <div class="topbar">
@@ -1282,14 +1282,14 @@
   </div>
 
   <div class="tabs">
-    <button class="tab" data-tab="dashboard">Dashboard</button>
+    <button class="tab active" data-tab="dashboard">Dashboard</button>
     <button class="tab" data-tab="landing">Landingen</button>
-    <button class="tab active" data-tab="runs">Runs</button>
+    <button class="tab" data-tab="runs">Runs</button>
     <button class="tab" data-tab="settings">Instellingen</button>
     <button class="tab" data-tab="info">Info</button>
   </div>
 
-  <div class="panel" id="panel-dashboard">
+  <div class="panel active" id="panel-dashboard">
     <div class="empty-state" id="dashboardEmpty" style="display:none;">
       <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M3 3v18h18"></path><path d="M7 14l3-3 3 3 5-5"></path>
@@ -1412,8 +1412,8 @@
     </div>
   </div>
 
-  <div class="panel active" id="panel-runs">
-    <div class="runs-top editing">
+  <div class="panel" id="panel-runs">
+    <div class="runs-top">
       <div class="settings-section" id="runsManageBox">
         <h3>Runs beheren</h3>
         <p class="desc">Voeg een nieuwe meetreeks toe, kies welke actief is op het dashboard, of verwijder een run.</p>
@@ -1446,7 +1446,7 @@
           <input type="file" id="importFile" accept=".json" style="display:none;">
         </div>
 
-        <div class="editor-data-warning" id="editorDataWarning" style="display: flex;">
+        <div class="editor-data-warning" id="editorDataWarning" style="display: none;">
           <div class="edw-icon">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
@@ -1460,7 +1460,7 @@
         </div>
       </div>
 
-      <div class="settings-section" id="runEditorBox" style="display: block;">
+      <div class="settings-section" id="runEditorBox" style="display: none;">
         <h3 id="runEditorTitle">Nieuwe run toevoegen</h3>
         <div class="editor-lock-notice">
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
